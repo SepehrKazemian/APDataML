@@ -223,8 +223,8 @@ class plottData:
 			
 			Yarr = np.append(Yarr, self.chanUtil[i : i + 240])
 
-			print(Ylearn)
-			print(Ylearn.shape)
+			print(self.Ylearn)
+			print(self.Ylearn.shape)
 			print(self.Xlearn)
 			print(self.Xlearn.shape)
 			
