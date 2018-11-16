@@ -246,7 +246,7 @@ class plottData:
 
 
 
-	def linearregression(self)   
+	def linearregression(self): 
 		
 		a=self.Xlearn
 		#print(a.T)
