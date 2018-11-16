@@ -173,26 +173,41 @@ class plottData:
 		print(self.timeArr[240])
 		print(self.timeArr[0].day)
 		print(self.timeArr[0].hour)
-		Xlearn = []
-		Ylearn = []
+		self.Xlearn = []
+		self.Ylearn = []
+		counter = 0
 		for i in range(0, len(self.timeArr) - numberOfSamples, 12): #start to iterate from zero till the end and slide every minute forward
 			Xarr = []
 			Yarr = []
 			Xarr = np.append(Xarr, self.timeArr[i : i + 240])
 
+			print("aaa")
 			firstElement = self.timeArr[i].hour * 3 + math.ceil(self.timeArr[i].minute / int(timerInMinute))
 			lastElement = self.timeArr[i + 240].hour * 3 + math.ceil(self.timeArr[i + 240].minute / int(timerInMinute))
 			self.timeSplit[firstElement - 1] = 1
 			self.timeSplit[lastElement - 1] = 1
-			Xarr = np.append(Xarr[i], self.timeSplit)
+			Xarr = np.append(Xarr, self.timeSplit)
+			print(self.timeSplit)
+			print("jjjj")
+			
+			print(Xarr)
+			print(Xarr.shape)
+			print("bbb")
 			
 			firstDay = self.timeArr[i].weekday()
 			lastDay = self.timeArr[i + 240].weekday()
 			self.days[firstDay] = 1
 			self.days[lastDay] = 1
 			Xarr = np.append(Xarr, self.days)
+			print(Xarr)
+			print(Xarr.shape)
+			print("ccc")
 			
-			Xlearn = np.vstack([Xlearn, Xarr])
+			if counter == 0:
+				self.Xlearn = np.append(self.Xlearn, Xarr)
+			else:
+				self.Xlearn = np.vstack([self.Xlearn, Xarr])
+			print(Xlearn.shape)
 			
 			self.days[firstDay] = 0
 			self.days[lastDay] = 0
@@ -200,14 +215,18 @@ class plottData:
 			self.timeSplit[lastElement - 1] = 0
 			
 			Ypred = self.chanUtil[i + 241]
-			Ylearn = np.vstack([Ylearn, Xarr])
+			if counter == 0:
+				self.Ylearn = np.append(self.Ylearn, Ypred)
+				counter = 1
+			else:
+				self.Ylearn = np.vstack([self.Ylearn, Ypred])
 			
 			Yarr = np.append(Yarr, self.chanUtil[i : i + 240])
-			
+
 			print(Ylearn)
 			print(Ylearn.shape)
-			print(Xlearn)
-			print(Xlearn.shape)
+			print(self.Xlearn)
+			print(self.Xlearn.shape)
 			
 		print(numberOfSamples)
 				
@@ -224,6 +243,37 @@ class plottData:
 #			self.signalVal = 0
 #			self.timeArr = []
 #			self.chanUtil = []
+
+
+
+	def linearregression(self)   
+		
+		a=self.Xlearn
+		#print(a.T)
+		data_X_train = a.T #a.reshape(-1,1)
+		#diabetes_X_test = b.T#.reshape(-1,1)
+
+		# Split the targets into training/testing sets
+		data_y_train = self.Ylearn
+		#diabetes_y_test = ([42, 44, 46.1, 48.2, 50.3])
+
+		# Create linear regression object
+		regr = linear_model.LinearRegression()
+
+		# Train the model using the training sets
+		regr.fit(data_X_train, data_y_train)
+
+        # Make predictions using the testing set
+        #diabetes_y_pred = regr.predict(diabetes_X_test)
+
+        # The coefficients
+		print('Coefficients: \n', regr.coef_)
+        # The mean squared error
+        #print("Mean squared error: %.2f"
+        #% mean_squared_error(diabetes_y_test, diabetes_y_pred))
+        # Explained variance score: 1 is perfect prediction
+
+
 
 
 if __name__ == '__main__':
