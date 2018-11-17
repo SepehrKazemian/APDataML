@@ -11,13 +11,20 @@ import os
 import subprocess
 import numpy as np
 import math
+import os.path
+import pickle
+import sklearn.linear_model as linear_model
+from sklearn.linear_model import LogisticRegression
 
 
 class plottData:
 
 
 	def __init__(self):
+		self.Xlearn = []
+		self.Ylearn = []
 		self.timeArr = []
+		self.timeArrStamp = []
 		self.from_zone = tz.gettz('UTC')
 		self.to_zone = tz.gettz('America/Edmonton')
 		now_timestamp = time.time()
@@ -39,10 +46,23 @@ class plottData:
 		timerInMinute = 20
 		numberOfSamples = timerInMinute * 12 #60 seconds / 5 seconds per sample
 
+		fileNameSearchX = "X" + str(fileName) + str(timerInMinute) + ".txt"
+		fileNameSearchY = "Y" + str(fileName) + str(timerInMinute) + ".txt"
 		
-		self.dataSplitting(fileName)
-		self.createTimeSplitter(timerInMinute)
-		self.dataPoint(numberOfSamples, timerInMinute)
+		if (os.path.isfile(fileNameSearchX) == True) and (os.path.isfile(fileNameSearchY) == True):
+			with open(fileNameSearchX, "rb") as f:
+				self.Xlearn = pickle.load(f)
+			with open(fileNameSearchY, "rb") as f:
+				self.Ylearn = pickle.load(f)
+			print(self.Xlearn)
+			print(self.Xlearn.shape)
+			print(self.Ylearn)
+			print(self.Ylearn.shape)
+		else:
+			self.dataSplitting(fileName)
+			self.createTimeSplitter(timerInMinute)
+			self.dataPoint(numberOfSamples, timerInMinute, fileName)
+		self.linearregression()
 		
 	def dataSplitting(self, fileName):
 		secondCounter = 0
@@ -142,6 +162,11 @@ class plottData:
 							currTimeStampUTC = datetime.datetime.fromtimestamp(prevTime).strftime('%Y-%m-%d %H:%M:%S')
 							currTimeStampUTC = datetime.datetime.strptime(currTimeStampUTC, '%Y-%m-%d %H:%M:%S')
 							central = self.offset + currTimeStampUTC
+							
+							#it seems LR in sickit learn cannot work with datetime, so we have to reconvert it to
+							#values
+							centralTimeStamp = time.mktime(datetime.datetime.strptime(str(central), "%Y-%m-%d %H:%M:%S").timetuple())
+							self.timeArrStamp.append(centralTimeStamp)
 							self.timeArr.append(central)
 							self.chanUtil = np.append(self.chanUtil, maxVal)
 							prevTime = prevTime + 5
@@ -168,46 +193,44 @@ class plottData:
 		self.days = np.zeros(7)
 	
 	
-	def dataPoint(self, numberOfSamples, timerInMinute):
+	def dataPoint(self, numberOfSamples, timerInMinute, fileName):
 		print(self.timeArr[0])
 		print(self.timeArr[240])
 		print(self.timeArr[0].day)
 		print(self.timeArr[0].hour)
-		self.Xlearn = []
-		self.Ylearn = []
 		counter = 0
 		for i in range(0, len(self.timeArr) - numberOfSamples, 12): #start to iterate from zero till the end and slide every minute forward
 			Xarr = []
 			Yarr = []
-			Xarr = np.append(Xarr, self.timeArr[i : i + 240])
+			Xarr = np.append(Xarr, self.timeArrStamp[i : i + 240])
 
-			print("aaa")
+#			print("aaa")
 			firstElement = self.timeArr[i].hour * 3 + math.ceil(self.timeArr[i].minute / int(timerInMinute))
 			lastElement = self.timeArr[i + 240].hour * 3 + math.ceil(self.timeArr[i + 240].minute / int(timerInMinute))
 			self.timeSplit[firstElement - 1] = 1
 			self.timeSplit[lastElement - 1] = 1
 			Xarr = np.append(Xarr, self.timeSplit)
-			print(self.timeSplit)
-			print("jjjj")
+#			print(self.timeSplit)
+#			print("jjjj")
 			
-			print(Xarr)
-			print(Xarr.shape)
-			print("bbb")
+#			print(Xarr)
+#			print(Xarr.shape)
+#			print("bbb")
 			
 			firstDay = self.timeArr[i].weekday()
 			lastDay = self.timeArr[i + 240].weekday()
 			self.days[firstDay] = 1
 			self.days[lastDay] = 1
 			Xarr = np.append(Xarr, self.days)
-			print(Xarr)
-			print(Xarr.shape)
-			print("ccc")
+#			print(Xarr)
+#			print(Xarr.shape)
+#			print("ccc")
 			
 			if counter == 0:
 				self.Xlearn = np.append(self.Xlearn, Xarr)
 			else:
 				self.Xlearn = np.vstack([self.Xlearn, Xarr])
-			print(Xlearn.shape)
+#			print(self.Xlearn.shape)
 			
 			self.days[firstDay] = 0
 			self.days[lastDay] = 0
@@ -223,38 +246,41 @@ class plottData:
 			
 			Yarr = np.append(Yarr, self.chanUtil[i : i + 240])
 
-			print(self.Ylearn)
-			print(self.Ylearn.shape)
-			print(self.Xlearn)
-			print(self.Xlearn.shape)
+#			print(self.Ylearn)
+#			print(self.Ylearn.shape)
+#			print(self.Xlearn)
+#			print(self.Xlearn.shape)
 			
-		print(numberOfSamples)
+#		print(numberOfSamples)
+		XmatrixName = "X" + str(fileName) + str(timerInMinute) + ".txt"
+		with open(XmatrixName, 'wb') as f:
+			pickle.dump(self.Xlearn, f)
 				
+		YmatrixName = "Y" + str(fileName) + str(timerInMinute) + ".txt"
+		with open(YmatrixName, 'wb') as f:
+			pickle.dump(self.Ylearn, f)	
+		
 
-	#		print(self.timeArr)
-	#		print(self.minArr)
-	#		print(self.maxArr)
-#			self.signalVal = int(self.signalVal / lineCounter)
-#			data = [go.Scatter( x = self.timeArr, y=self.chanUtil )]
-#			titleAP = "AP MAC Address is: " + str(fileName) + " with Mean Signal Value of: " + str(self.signalVal)
-#			layout = go.Layout(title= titleAP, showlegend = False)
-#			fig = go.Figure(data=data, layout=layout)
-#			offline.plot(fig, filename = str(fileName) + ".html")
-#			self.signalVal = 0
-#			self.timeArr = []
-#			self.chanUtil = []
+		print(self.Xlearn)
+		print(self.Xlearn.shape)
+		print(self.Ylearn)
+		print(self.Ylearn.shape)
 
 
 
 	def linearregression(self): 
 		
-		a=self.Xlearn
+		a = self.Xlearn[:, :]
 		#print(a.T)
-		data_X_train = a.T #a.reshape(-1,1)
+		data_X_train = a #a.reshape(-1,1)
+		print(data_X_train)
+		print(data_X_train.shape)
 		#diabetes_X_test = b.T#.reshape(-1,1)
 
 		# Split the targets into training/testing sets
-		data_y_train = self.Ylearn
+		data_y_train = self.Ylearn[:]
+		print(data_y_train)
+		print(data_y_train.shape)
 		#diabetes_y_test = ([42, 44, 46.1, 48.2, 50.3])
 
 		# Create linear regression object
