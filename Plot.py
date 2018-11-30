@@ -15,6 +15,7 @@ class plottData:
 
 
 	def __init__(self):
+		#initialize the class, creating lists, taking care of time differences
 		self.timeArr = []
 		self.maxArr = []
 		self.minArr = []
@@ -32,7 +33,8 @@ class plottData:
 		
 	def plotting(self):
 	
-		files = subprocess.Popen("ls aa/", shell=True, stdout=subprocess.PIPE)
+		nodeNumber = input("what is the node number? ")
+		files = subprocess.Popen("ls " + "node" + str(nodeNumber) + "/extractedData/", shell=True, stdout=subprocess.PIPE)
 		fileNames = files.stdout.read().decode("ascii")
 		fileNameArr = []
 		strName = ""
@@ -59,7 +61,8 @@ class plottData:
 			print(fileName)
 			cu = ""
 			lineCounter = 0
-			with open("aa/" + str(fileName)) as fp:
+			fileNameStr = "node" + str(nodeNumber) + "/extractedData/" + str(fileName)
+			with open(fileNameStr) as fp:
 				for line in fp:
 					cu = ""
 					lineCounter += 1
@@ -150,7 +153,9 @@ class plottData:
 			titleAP = "AP MAC Address is: " + str(fileName) + " with Mean Signal Value of: " + str(self.signalVal)
 			layout = go.Layout(title= titleAP, showlegend = False)
 			fig = go.Figure(data=data, layout=layout)
-			offline.plot(fig, filename = str(fileName) + ".html")
+			plotName = "node" + str(nodeNumber) + "/plot/" + str(fileName) + ".html"
+
+			offline.plot(fig, filename = plotName)
 			self.signalVal = 0
 			self.timeArr = []
 			self.chanUtil = []
