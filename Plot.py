@@ -9,6 +9,7 @@ import pandas as pd
 from dateutil import tz
 import os
 import subprocess
+import learningAlgs as classImportLA
 
 
 class plottData:
@@ -31,14 +32,26 @@ class plottData:
 		self.chanUtil = []
 			
 		
-	def plotting(self):
+	def prepration(self):
 	
+		channelPlotterBool = 0
+		channelPlotterBool = input("Plotting channel based [1] or AP based [0]? (default is 0) ")
+		
+		print(channelPlotterBool)
+		
+		if int(channelPlotterBool) != 0 and int(channelPlotterBool) != 1:
+			return 0
+			
+		print("1")	
+		#finding all the files in the folder
 		nodeNumber = input("what is the node number? ")
 		files = subprocess.Popen("ls " + "node" + str(nodeNumber) + "/extractedData/", shell=True, stdout=subprocess.PIPE)
 		fileNames = files.stdout.read().decode("ascii")
 		fileNameArr = []
 		strName = ""
 		
+		
+		print("2")
 		for i in range(len(str(fileNames))):
 			if str(fileNames[i]) != "\n":
 				strName += str(fileNames[i])
@@ -53,114 +66,42 @@ class plottData:
 		max = -float('inf') 
 		prevTimeStamp = ""
 		
+		
+		print("3")
+		#choosing each file in the folder for the plotting
+		print("existing files are: " + str(fileNameArr))
 		for i in range(len(fileNameArr)):
-			print(fileNameArr)
-			time.sleep(1)
+			time.sleep(0.5)
 			fileName = fileNameArr[i]
-#			fileName = "500f8022abe0"
-			print(fileName)
+			print("reading file with the name: " + str(fileName))
 			cu = ""
 			lineCounter = 0
 			fileNameStr = "node" + str(nodeNumber) + "/extractedData/" + str(fileName)
-			with open(fileNameStr) as fp:
-				for line in fp:
-					cu = ""
-					lineCounter += 1
-					month = ""
-					day = ""
-					timer = ""
-					year = ""
-					channel = ""
-					
-			#		print(line[13:21])
-					timer = line[13:21]
+			#sending file for data extraction
+			laObj = classImportLA.learningAlgs()
+			laObj.dataSplitting(fileName, channelPlotterBool)
+			#now we have files for that
+		
+		print("4")
+		for i in range(1, 4):
+			laObj = classImportLA.learningAlgs()
+			fileName = "channel" + str(i)
+			CSVStat, CU, Time = laObj.csvChecker(fileName, 0)
+			self.plotting(fileName, CU, Time, nodeNumber)
 
-					if line[0:3] == "Oct":
-						month = "10"
-					elif line[0:3] == "Nov":
-						month = "11"
-					elif line[0:3] == "Dec":
-						month = "12"
-					elif line[0:3] == "Sep":
-						month = "09"
-					elif line[0:3] == "Aug":
-						month = "08"
-					elif line[0:3] == "Jan":
-						month = "01"
-					else:
-						print("problem in month")
-						
-					day = line[4:6]
-					
-					year = line[8:12]
-					
-					stringTime = month + "/" + day + "/" + year + " " + timer 
-					
-					try:
-						currTimeStamp = time.mktime(datetime.datetime.strptime(stringTime, "%m/%d/%Y %H:%M:%S").timetuple())
-					except ValueError:
-						print("d" + str(stringTime))
-					
-					for i in range(36,39):
-						if line[i] != " ":
-							channel += line[i]
-						else:
-							break
-					
-					if channel == "1" or channel == "6":
-						for i in range(38,41):
-							if line[i] != " ":
-								cu += line[i]
-							else:
-								break
-					elif channel == "11":
-						for i in range(39,42):
-							if line[i] != " ":
-								cu += line[i]
-							else:
-								break						
-					
-					signalReverse = ""
-					signal = ""
-					
-					for i in range(len(line) - 1, 0, -1):
-						if line[i] == " ":
-							break
-						else:	
-							signalReverse += line[i]
-						
-					signal = signalReverse[::-1]
-					
-					try:
-						self.signalVal += int(signal)
-					except ValueError:
-						print("a" + str(signal))
-					
-					currTimeStampUTC = datetime.datetime.fromtimestamp(currTimeStamp).strftime('%Y-%m-%d %H:%M:%S')
-					currTimeStampUTC = datetime.datetime.strptime(currTimeStampUTC, '%Y-%m-%d %H:%M:%S')
-					central = self.offset + currTimeStampUTC
-					try:
-						self.timeArr.append(central)
-						self.chanUtil.append(int(cu))
-					except ValueError:
-						print("channel utilization error")
+			
 
-	#		print(self.timeArr)
-	#		print(self.minArr)
-	#		print(self.maxArr)
-			self.signalVal = int(self.signalVal / lineCounter)
-			data = [go.Scatter( x = self.timeArr, y=self.chanUtil )]
-			titleAP = "AP MAC Address is: " + str(fileName) + " with Mean Signal Value of: " + str(self.signalVal)
-			layout = go.Layout(title= titleAP, showlegend = False)
-			fig = go.Figure(data=data, layout=layout)
-			plotName = "node" + str(nodeNumber) + "/plot/" + str(fileName) + ".html"
+	def plotting(self, CU, Time, nodeNumber):
+		data = [go.Scatter( x = Time, y = CU )]
+		titleAP = "file name is : " + str(fileName)
+		layout = go.Layout(title= titleAP, showlegend = False)
+		fig = go.Figure(data=data, layout=layout)
+		plotName = "node" + str(nodeNumber) + "/plot/" + str(fileName) + ".html"
 
-			offline.plot(fig, filename = plotName)
-			self.signalVal = 0
-			self.timeArr = []
-			self.chanUtil = []
+		offline.plot(fig, filename = plotName)
+			
 
 
 if __name__ == '__main__':
 	obj = plottData()
-	obj.plotting()
+	obj.prepration()

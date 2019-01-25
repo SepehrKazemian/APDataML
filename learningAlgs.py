@@ -31,7 +31,7 @@ from scipy import stats
 import pandas
 import warnings
 
-class plottData:
+class learningAlgs:
 
 
 	def __init__(self):
@@ -75,6 +75,7 @@ class plottData:
 			# print("k is: " + str(kList[i]))
 			# self.makeDataSet(kList[i])
 			
+			#NeuralNetwork testing with cross validation
 			# bestHLIndex = float('inf')
 			# bestRegIndex = float('inf')
 			# for x in range(len(hiddenLayers)):
@@ -91,7 +92,7 @@ class plottData:
 				# NN_k = kList[i]
 			# print("min NN_K is: " + str(NN_k) + " with value of: " + str(hiddenLayers[bestHL_kIndex]))
 				
-			
+			# #LogisticRegression testing with cross validation			
 			# for x in range(len(regularizer)):
 				# errorVal = self.CrossValidation("LogisticRegression", regularizer[x])
 				# print("our regularizer: " + str(regularizer[x]))
@@ -105,20 +106,7 @@ class plottData:
 				# bestLR_kIndex = bestRegIndex
 				# LR_k = kList[i]
 
-			# print("min LR_k is: " + str(LR_k) + " with value of: " + str(regularizer[bestLR_kIndex]))
-
-				
-			self.makeDataSet(10)
-			NNError = self.NeuralNetwork(self.Xtrain, self.Ytrain, self.Xtest, self.Ytest, 5)
-			print(NNError)
-			
-			# self.makeDataSet(LR_k)
-			# LRError = self.LogisticRegression(self.Xtrain, self.Ytrain, self.Xtest, self.Ytest, regularizer[bestLR_kIndex])
-			# print("Final Error: " + str(LRError))
-			
-			
-			print("\n\n\n\nk is: " + str(kList[i]))
-			
+			# #NaiveBayes testing with cross validation			
 			# bestNBIndex = float('inf')
 			# bestRegIndex = float('inf')
 			# errorVal = self.CrossValidation("NaiveBayes", None)
@@ -126,6 +114,24 @@ class plottData:
 			# if minErrorNN < errorVal:
 				# minErrorNN = errorVal
 				# bestNBIndex = kList[i]
+
+			print("\n\n\n\nk is: " + str(kList[i]))
+			NNError = 0
+			LRError = 0
+			NBError = 0
+			
+			self.makeDataSet(kList[i])
+			for x in range(len(hiddenLayers)):	
+				NNError = self.NeuralNetwork(self.Xtrain, self.Ytrain, self.Xtest, self.Ytest, hiddenLayers[x])
+				print("NeuralNetwork accuracy is: " + str(NNError))
+			
+			for x in range(len(regularizer)):
+				LRError = self.LogisticRegression(self.Xtrain, self.Ytrain, self.Xtest, self.Ytest, regularizer[x])
+				print("LinearRegression accuracy is: " + str(LRError))
+			
+			NBError = self.NaiveBayes(self.Xtrain, self.Ytrain, self.Xtest, self.Ytest)
+			print("NaiveBayes accuracy is: " + str(NBError))			
+			
 		
 		
 		# self.makeDataSet(10)
@@ -144,30 +150,33 @@ class plottData:
 			# nn.append(self.NeuralNetwork(self.Xtrain, self.Ytrain, x[i], y[i], 5))
 		# print(nn)
 
-		nn = [0.8662543486664089, 0.9018167761886355, 0.947816003092385, 0.89563200618477, 0.8260533436412834, 0.8790104367993815, 0.9783533049864708, 0.9218870843000774, 0.8604021655065739, 0.848414539829853]
-		lr = [0.9344135802469136, 0.9344135802469136, 0.9633487654320988, 0.9189814814814815, 0.8460648148148148, 0.8819444444444444, 0.9756944444444444, 0.9868776534156696, 1.0, 1.0]
-		nb = [0.8670274449168921, 0.7959025898724391, 0.9404715887127948, 0.8218013142636258, 0.7108620023192888, 0.8790104367993815, 0.9783533049864708, 0.9218870843000774, 0.8604021655065739, 0.848414539829853]
+		# nn = [0.8662543486664089, 0.9018167761886355, 0.947816003092385, 0.89563200618477, 0.8260533436412834, 0.8790104367993815, 0.9783533049864708, 0.9218870843000774, 0.8604021655065739, 0.848414539829853]
+		# lr = [0.9344135802469136, 0.9344135802469136, 0.9633487654320988, 0.9189814814814815, 0.8460648148148148, 0.8819444444444444, 0.9756944444444444, 0.9868776534156696, 1.0, 1.0]
+		# nb = [0.8670274449168921, 0.7959025898724391, 0.9404715887127948, 0.8218013142636258, 0.7108620023192888, 0.8790104367993815, 0.9783533049864708, 0.9218870843000774, 0.8604021655065739, 0.848414539829853]
 		
 		
-		self.makeDataSet(60)
-		x = np.array_split(self.Xtest, 10)
-		y = np.array_split(self.Ytest, 10)
-		nb = []
-		for i in range(10):
-			nb.append(self.NaiveBayes(self.Xtrain, self.Ytrain, x[i], y[i]))			
+		# self.makeDataSet(60)
+		# x = np.array_split(self.Xtest, 10)
+		# y = np.array_split(self.Ytest, 10)
+		# nb = []
+		# for i in range(10):
+			# nb.append(self.NaiveBayes(self.Xtrain, self.Ytrain, x[i], y[i]))
+
+
+			
 		# print(nb)
 			# print("min K is: " + str(kList[i]) + " with value of: " + str(minErrorNN))
-		ln = stats.ttest_ind(nn,lr)
-		lb = stats.ttest_ind(lr,nb)
-		bn = stats.ttest_ind(nn,nb)
+		# ln = stats.ttest_ind(nn,lr)
+		# lb = stats.ttest_ind(lr,nb)
+		# bn = stats.ttest_ind(nn,nb)
 		
-		print(ln, lb, bn)
+		# print(ln, lb, bn)
 		
-		ln = stats.ttest_ind(lr,nn)
-		lb = stats.ttest_ind(lr,nb)
-		bn = stats.ttest_ind(nb,nn)
+		# ln = stats.ttest_ind(lr,nn)
+		# lb = stats.ttest_ind(lr,nb)
+		# bn = stats.ttest_ind(nb,nn)
 		
-		print(ln, lb, bn)
+		# print(ln, lb, bn)
 				
 
 		
@@ -209,32 +218,26 @@ class plottData:
 				self.dataPoint(numberOfSamples, timerInMinute, fileName, CU, Time)
 				
 			else:
-				self.dataSplitting(fileName, timerInMinute, numberOfSamples)
+				chanUtil, timeArr = self.dataSplitting(fileName, 0)
+				self.createTimeSplitter(timerInMinute)
+				self.dataPoint(numberOfSamples, timerInMinute, fileName, chanUtil, timeArr)
+				
+				
+		
 				
 			
 			
 			
 
 	def csvChecker(self, fileName, model):
-		pathFile = "node1/extractedData/" + fileName + ".csv"
+		pathFile = "node1/CSV/" + fileName + ".csv"
 		print(str(fileName) + " is in csvChecker")
 		if os.path.isfile(pathFile) == True:
 			#read the data from csv file
 			data = pandas.read_csv(pathFile, parse_dates=["time"])
 			
 			#pulling the time data out
-			#data["time"] = self.convertTime(data["time"])
-			# print(data["time"])
-			# print(type(data["time"].values))
 			timeArr = data["time"]
-			# print("ggggggggg")
-			# print(timeArr.shape)
-			# #timeArr = timeArr.astype(object)
-			# print(timeArr[0])
-			# print(timeArr[0].hour)
-			# timeArr = timeArr.reshape((len(timeArr), 1))
-			# print(type(timeArr[0]))
-			# print(timeArr.shape)
 			
 			#pulling CU data out and convert it to a classifier or non classifier
 			if model == "classification":
@@ -285,7 +288,7 @@ class plottData:
 			# self.createTimeSplitter(timerInMinute)
 			# self.dataPoint(numberOfSamples, timerInMinute, fileName)
 		
-	def dataSplitting(self, fileName, timeSplitter, numberOfSamples):
+	def dataSplitting(self, fileName, channelBasedBool):
 		#print(fileName + " in datasplitting func")
 
 		secondCounter = 0
@@ -296,16 +299,22 @@ class plottData:
 		signalVal = 0
 		counter = 0
 		preMaxVal = 0
-		fileWrite = "node1/extractedData/" + str(fileName)
+		channelCheck = 0
+		fileRead = "node1/extractedData/" + str(fileName)
+		fileWrite = "node1/CSV/" + str(fileName)
+			
 		#print("here")
 		csvArrTime = []
 		csvArrCU = []
+		csvArrCUVal = []
 		chanUtil = []
+		chanUtilVal = []
 		timeArr = []
-		with open(fileWrite) as fp:
+		with open(fileRead) as fp:
 			for line in fp:
 				cu = ""
 				lineCounter += 1
+				print(lineCounter)
 				month = ""
 				day = ""
 				timer = ""
@@ -348,6 +357,15 @@ class plottData:
 						channel += line[i]
 					else:
 						break
+				
+				if channelBasedBool == 1 and channelCheck != channel:
+					if channelCheck != 0: #channelCheck != 0 (initial value) and it is != channel which means channel changed
+						self.pandasWriting(csvArrTime, csvArrCU, fileWrite)
+						csvArrTime = []
+						csvArrCU = []
+						
+					fileWrite = "channel" + str(channel)
+					channelCheck = channel
 				
 				#channel changes the string positions
 				if channel == "1" or channel == "6":
@@ -393,17 +411,16 @@ class plottData:
 							currTimeStampUTC = datetime.datetime.strptime(currTimeStampUTC, '%Y-%m-%d %H:%M:%S')
 							central = self.offset + currTimeStampUTC
 							
-							#it seems LR in sickit learn cannot work with datetime, so we have to reconvert it to
+							#it seems sickit learn cannot work with datetime, so we have to reconvert it to
 							#values
 							centralTimeStamp = time.mktime(datetime.datetime.strptime(str(central), "%Y-%m-%d %H:%M:%S").timetuple())
 							
 							csvArrTime.append(central)
-#							self.timeArrStamp.append(centralTimeStamp)
 							timeArr.append(central)
 								
 							csvArrCU.append(maxVal/255)
 							chanUtil = np.append(chanUtil, self.normalClassification(maxVal/255))
-					#		self.chanUtil = np.append(self.chanUtil, (maxVal/255))
+							chanUtilVal = np.append(chanUtil, chanUtilVal)
 							if maxVal > 255:
 								print("bilakh " + str(maxVal))
 							prevTime = prevTime + 5
@@ -418,18 +435,20 @@ class plottData:
 
 				except ValueError:
 					print("channel utilization error")
-		#print(len(chanUtil))
-		#print(len(timeArr))
 		
+
+		self.pandasWriting(csvArrTime, csvArrCU, fileWrite)
+
+			
+		return chanUtil, timeArr
+		
+		
+	def pandasWriting(self, csvArrTime, csvArrCU, fileWrite):
 		dataFile = pandas.DataFrame(data = {"time": csvArrTime, "CU": csvArrCU})
-		dataFile.to_csv("node1/extractedData/" + str(fileName) + ".csv", sep = ",", index = False)
+		dataFile.to_csv("node1/extractedData/" + str(fileWrite) + ".csv", sep = ",", index = False)
 		
-		#print(fileName)
-		#print("csv file is added")
-		#print("now we have finished reading data")
 		
-		self.createTimeSplitter(timeSplitter)
-		self.dataPoint(numberOfSamples, timeSplitter, fileName, chanUtil, timeArr)
+
 
 		
 		
@@ -465,17 +484,19 @@ class plottData:
 		counter = 0
 		zeros = np.zeros(numberOfSamples + int(60 / timerInMinute * 24) + 7)
 		numberOfFeatures = numberOfSamples + int(60 / timerInMinute * 24) + 7
-		#print(numberOfFeatures, numberOfSamples)
+		print(numberOfFeatures, numberOfSamples)
 		
 		sampleCounter = 0
 		XZeros = []
-		for i in range(0, len(timeArr) - numberOfSamples, 12):
+		for i in range(0, len(timeArr) - numberOfFeatures, 1):
 			#to increase the efficiency, we do not want to append, so we make the zeros of the array
 			#then in the next step we will replace elements of the array by their indexes
 			sampleCounter += 1
 		
 		#print("aaaa")
-		#print(sampleCounter)
+		print(sampleCounter)
+		print(chanUtil.shape)
+		print(len(timeArr) - numberOfSamples)
 			
 		XZeros = np.zeros([sampleCounter, numberOfFeatures])
 			
@@ -490,7 +511,7 @@ class plottData:
 			self.Ytest = np.zeros([sampleCounter,1])
 		
 
-		for i in range(0, len(timeArr) - numberOfSamples, 1): #start to iterate from zero till the end and slide every minute forward
+		for i in range(0, len(timeArr) - numberOfFeatures, 1): #start to iterate from zero till the end and slide every minute forward
 			
 			#we want to keep some lists untouched
 			Xarr = np.copy(zeros)
@@ -615,9 +636,9 @@ class plottData:
 			solvers = "saga"
 
 		clf = LogisticRegression(penalty = reg, max_iter = 100000, random_state = 0, solver = solvers , multi_class = 'multinomial')
-		print(Xtrain.shape)
+#		print(Xtrain.shape)
 		Ytrain = Ytrain.reshape(len(Ytrain),)
-		print(Ytrain.shape)
+#		print(Ytrain.shape)
 		clf.fit(Xtrain[:, :], Ytrain[:])
 		FinalXtest = Xtest[:,:]
 		Ypred = clf.predict(FinalXtest)
@@ -626,24 +647,24 @@ class plottData:
 		errorW = f1_score(Ytest, Ypred, average='weighted', labels=np.unique(Ypred))
 		errorMa = f1_score(Ytest, Ypred, average='macro', labels=np.unique(Ypred))
 		errorMi = f1_score(Ytest, Ypred, average='micro', labels=np.unique(Ypred))
-		print("errorW is: " + str(errorW))		
-		print("errorMa is: " + str(errorMa))		
-		print("errorMi is: " + str(errorMi))		
+		# print("errorW is: " + str(errorW))		
+		# print("errorMa is: " + str(errorMa))		
+		# print("errorMi is: " + str(errorMi))		
 		
 
 		recallW = recall_score(Ytest, Ypred, average='weighted')
 		recallMa = recall_score(Ytest, Ypred, average='macro')
 		recallMi = recall_score(Ytest, Ypred, average='micro')
-		print("recallW is: " + str(recallW))		
-		print("recallMa is: " + str(recallMa))
-		print("recallMi is: " + str(recallMi))		
+		# print("recallW is: " + str(recallW))		
+		# print("recallMa is: " + str(recallMa))
+		# print("recallMi is: " + str(recallMi))		
 		
 		precisionW = precision_score(Ytest, Ypred, average='weighted')
 		precisionMa = precision_score(Ytest, Ypred, average='macro')
 		precisionMi = precision_score(Ytest, Ypred, average='micro')
-		print("precisionW is: " + str(precisionW))		
-		print("precisionMa is: " + str(precisionMa))
-		print("precisionMi is: " + str(precisionMi))			
+		# print("precisionW is: " + str(precisionW))		
+		# print("precisionMa is: " + str(precisionMa))
+		# print("precisionMi is: " + str(precisionMi))			
 		
 		acc = accuracy_score(Ytest, Ypred)
 		print("acc is: " + str(acc))		
@@ -721,16 +742,16 @@ class plottData:
 		precisionMa = precision_score(Ytest, Ypred, average='macro')
 		precisionMi = precision_score(Ytest, Ypred, average='micro')
 
-		print("acc is: " + str(acc))
+		# print("acc is: " + str(acc))
 		
-		print("recallW is: " + str(recallW))		
-		print("recallMi is: " + str(recallMi))	
+		# print("recallW is: " + str(recallW))		
+		# print("recallMi is: " + str(recallMi))	
 		
-		print("precisionW is: " + str(precisionW))		
-		print("precisionMi is: " + str(precisionMi))		
+		# print("precisionW is: " + str(precisionW))		
+		# print("precisionMi is: " + str(precisionMi))		
 
-		print("fscoreW is: " + str(errorW))		
-		print("fscoreW is: " + str(errorMi))
+		# print("fscoreW is: " + str(errorW))		
+		# print("fscoreW is: " + str(errorMi))
 
 
 
@@ -766,23 +787,23 @@ class plottData:
 		Ypred = Ypred.reshape((len(Ypred),1))
 
 		errorW = f1_score(Ytest, Ypred, average='weighted', labels=np.unique(Ypred))
-		print("errorW is: " + str(errorW))		
+#		print("errorW is: " + str(errorW))		
 		
 		
 
 		recallW = recall_score(Ytest, Ypred, average='weighted', labels=np.unique(Ypred))
-		print("recallW is: " + str(recallW))		
+#		print("recallW is: " + str(recallW))		
 	
 		
 		precisionW = precision_score(Ytest, Ypred, average='weighted', labels=np.unique(Ypred))
-		print("precisionW is: " + str(precisionW))		
+#		print("precisionW is: " + str(precisionW))		
 		
 		
 		acc = accuracy_score(Ytest, Ypred)
-		print("acc is: " + str(acc))		
+#		print("acc is: " + str(acc))		
 		return acc
 
 
 if __name__ == '__main__':
-	obj = plottData()
+	obj = learningAlgs()
 	obj.threadCall()
