@@ -12,6 +12,22 @@ import subprocess
 import learningAlgs as classImportLA
 
 
+from dateutil.relativedelta import relativedelta
+import datetime
+import time
+import matplotlib.pyplot as plt
+import plotly.plotly as py
+import plotly.graph_objs as go
+import plotly.offline as offline
+import pandas as pd
+from dateutil import tz
+import os
+import subprocess
+import numpy as np
+import warnings
+
+
+
 class plottData:
 
 
@@ -78,15 +94,14 @@ class plottData:
 			lineCounter = 0
 			fileNameStr = "node" + str(nodeNumber) + "/extractedData/" + str(fileName)
 			#sending file for data extraction
-			laObj = classImportLA.learningAlgs()
-			laObj.dataSplitting(fileName, channelPlotterBool)
+			classImportLA.dataSplitting(fileName, channelPlotterBool)
 			#now we have files for that
 		
 		print("4")
 		for i in range(1, 4):
-			laObj = classImportLA.learningAlgs()
 			fileName = "channel" + str(i)
-			CSVStat, CU, Time = laObj.csvChecker(fileName, 0)
+			obj = classImportLA.learningAlgs()
+			CSVStat, CU, Time = obj.csvChecker(fileName, 0)
 			self.plotting(fileName, CU, Time, nodeNumber)
 
 			
@@ -97,10 +112,8 @@ class plottData:
 		layout = go.Layout(title= titleAP, showlegend = False)
 		fig = go.Figure(data=data, layout=layout)
 		plotName = "node" + str(nodeNumber) + "/plot/" + str(fileName) + ".html"
-
 		offline.plot(fig, filename = plotName)
 			
-
 
 if __name__ == '__main__':
 	obj = plottData()
