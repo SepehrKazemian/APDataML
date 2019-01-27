@@ -10,7 +10,7 @@ from dateutil import tz
 import os
 import subprocess
 import learningAlgs as classImportLA
-
+import dataManipulation as dataMan
 
 from dateutil.relativedelta import relativedelta
 import datetime
@@ -86,7 +86,7 @@ class plottData:
 		print("3")
 		#choosing each file in the folder for the plotting
 		print("existing files are: " + str(fileNameArr))
-		for i in range(len(fileNameArr)):
+		for i in range(len(fileNameArr) - 1):
 			time.sleep(0.5)
 			fileName = fileNameArr[i]
 			print("reading file with the name: " + str(fileName))
@@ -94,19 +94,28 @@ class plottData:
 			lineCounter = 0
 			fileNameStr = "node" + str(nodeNumber) + "/extractedData/" + str(fileName)
 			#sending file for data extraction
-			classImportLA.dataSplitting(fileName, channelPlotterBool)
+			dataMan.dataSplitting(fileName, channelPlotterBool)
 			#now we have files for that
 		
 		print("4")
 		for i in range(1, 4):
-			fileName = "channel" + str(i)
+			if i == 1:
+				num = 1
+			elif i == 2:
+				num = 6
+			elif i == 3:
+				num = 11
+			fileName = "channel" + str(num)
 			obj = classImportLA.learningAlgs()
 			CSVStat, CU, Time = obj.csvChecker(fileName, 0)
-			self.plotting(fileName, CU, Time, nodeNumber)
+			print(CU)
+			print(Time)
+			if CSVStat == True:
+				self.plotting(fileName, CU, Time, nodeNumber)
 
 			
 
-	def plotting(self, CU, Time, nodeNumber):
+	def plotting(self, fileName, CU, Time, nodeNumber):
 		data = [go.Scatter( x = Time, y = CU )]
 		titleAP = "file name is : " + str(fileName)
 		layout = go.Layout(title= titleAP, showlegend = False)
