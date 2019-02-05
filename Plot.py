@@ -51,11 +51,12 @@ class plottData:
 	def prepration(self):
 	
 		channelPlotterBool = 0
-		channelPlotterBool = input("Plotting channel based [1] or AP based [0]? (default is 0) ")
+		channelPlotterBool = input("Plotting frequency based [2], channel based [1], or AP based [0]? (default is 0) ")
+		fileName = ""
 		
 		print(channelPlotterBool)
 		
-		if int(channelPlotterBool) != 0 and int(channelPlotterBool) != 1:
+		if int(channelPlotterBool) != 0 and int(channelPlotterBool) != 1 and int(channelPlotterBool) != 2:
 			return 0
 			
 		print("1")	
@@ -81,43 +82,83 @@ class plottData:
 		min = float('inf')
 		max = -float('inf') 
 		prevTimeStamp = ""
+		result = 0
+		
+		#check did we process raw data for channel-based or not
+		if int(channelPlotterBool) == 1:
+			result = self.CSVCheck(fileName, nodeNumber, channelPlotterBool)
+		
+		#if we did not proccess raw data for channel-based or it is not for channel-based at all:
+		if int(channelPlotterBool) != 1 or (int(channelPlotterBool) == 1 and result == False):
+			print("3")
+			#choosing each file in the folder for the plotting
+			print("existing files are: " + str(fileNameArr))
+			for i in range(len(fileNameArr)):
+				time.sleep(0.5)
+				fileName = fileNameArr[i]
+				if int(channelPlotterBool) != 1:
+					result = self.CSVCheck(fileName, nodeNumber, channelPlotterBool)
+				
+				if (int(channelPlotterBool) != 1 and result == False) or int(channelPlotterBool) == 1:
+					print("reading file with the name: " + str(fileName))
+					cu = ""
+					lineCounter = 0
+					fileNameStr = "node" + str(nodeNumber) + "/extractedData/" + str(fileName)
+					#sending file for data extraction
+					dataMan.dataSplitting(fileName, channelPlotterBool, 0)
+					#now we have files for that
 		
 		
-		print("3")
-		#choosing each file in the folder for the plotting
-		print("existing files are: " + str(fileNameArr))
-		for i in range(len(fileNameArr) - 1):
-			time.sleep(0.5)
-			fileName = fileNameArr[i]
-			print("reading file with the name: " + str(fileName))
-			cu = ""
-			lineCounter = 0
-			fileNameStr = "node" + str(nodeNumber) + "/extractedData/" + str(fileName)
-			#sending file for data extraction
-			dataMan.dataSplitting(fileName, channelPlotterBool)
-			#now we have files for that
-		
-		print("4")
-		for i in range(1, 4):
-			if i == 1:
-				num = 1
-			elif i == 2:
-				num = 6
-			elif i == 3:
-				num = 11
-			fileName = "channel" + str(num)
-			obj = classImportLA.learningAlgs()
-			CSVStat, CU, Time = obj.csvChecker(fileName, 0)
-			print(CU)
-			print(Time)
-			if CSVStat == True:
-				self.plotting(fileName, CU, Time, nodeNumber)
+	def CSVCheck(self, fileName, nodeNumber, channelPlotterBool):
+		obj = classImportLA.learningAlgs()
+		if int(channelPlotterBool) == 1:
+			for i in range(1, 4):
+				if i == 1:
+					num = 1
+				elif i == 2:
+					num = 6
+				elif i == 3:
+					num = 11
+				fileName = "channel" + str(num)
+				CSVStat, CU, Time = obj.csvChecker(fileName, 0)
 
+				if CSVStat == True:
+					print("here it is\n")
+					self.plotting(fileName, CU, Time, nodeNumber, channelPlotterBool)
+				
+				else:
+					return False
+						
+					
+		else:
+			CSVStat, CU, Time = obj.csvChecker(fileName, 0)
+			if CSVStat == True:
+				print("here it is")
+				if int(channelPlotterBool) == 0:
+					self.plotting(fileName, CU, Time, nodeNumber, channelPlotterBool)
+					
+				else: #channelPlotterBool == 2
+					CU = np.round(CU, decimals = 5)
+					CUVal, count = np.unique(CU, return_counts = True)
+					self.plotting(fileName, CUVal, count, nodeNumber, channelPlotterBool)
+				return True
+				
+			else:
+				return False
 			
 
-	def plotting(self, fileName, CU, Time, nodeNumber):
-		data = [go.Scatter( x = Time, y = CU )]
+	def plotting(self, fileName, CU, Time, nodeNumber, channelPlotterBool):
+		print(Time)
+		print(CU)
+		if int(channelPlotterBool) == 2: #Time is Count here
+			count = Time
+			data = [go.Scatter( x = CU, y = count )]
+		else:
+			data = [go.Scatter( x = Time, y = CU )]
+		
+		fileName = str(fileName) + " mode" + channelPlotterBool
 		titleAP = "file name is : " + str(fileName)
+		print("yoooohooooooooooooooooooooooooooooooo")
 		layout = go.Layout(title= titleAP, showlegend = False)
 		fig = go.Figure(data=data, layout=layout)
 		plotName = "node" + str(nodeNumber) + "/plot/" + str(fileName) + ".html"

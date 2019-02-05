@@ -30,8 +30,9 @@ from sklearn.metrics import recall_score
 from scipy import stats
 import pandas
 import warnings
+from sklearn.cluster import KMeans
 
-def dataSplitting(fileName, channelBasedBool):
+def dataSplitting(fileName, channelBasedBool, classifier):
 	print("salam")
 	#print(fileName + " in datasplitting func")
 	now_timestamp = time.time()
@@ -167,7 +168,9 @@ def dataSplitting(fileName, channelBasedBool):
 						csvArrTime.append(central)
 						timeArr.append(central)
 						csvArrCU.append(maxVal/255)
-						chanUtil = np.append(chanUtil, normalClassification(maxVal/255))
+						if classifier == "man":
+							chanUtil = np.append(chanUtil, normalClassification(maxVal/255))
+
 
 						if maxVal > 255:
 							print("bilakh " + str(maxVal))
@@ -186,6 +189,9 @@ def dataSplitting(fileName, channelBasedBool):
 	
 
 	pandasWriting(csvArrTime, csvArrCU, fileWrite)
+	
+	if classifier == "k":
+		chanUtil = clusteringKMeans(csvArrCU)
 
 		
 	return chanUtil, timeArr
@@ -193,15 +199,23 @@ def dataSplitting(fileName, channelBasedBool):
 	
 def pandasWriting(csvArrTime, csvArrCU, fileWrite):
 	dataFile = pandas.DataFrame(data = {"time": csvArrTime, "CU": csvArrCU})
-	dataFile.to_csv("node1/CSV/" + str(fileWrite) + ".csv", sep = ",", index = False)
+	with open(str("node1/CSV/" + str(fileWrite) + ".csv"), 'a') as file:
+		dataFile.to_csv(file, sep = ",", header = False)
 	print("hereee")
 
 def normalClassification(value):
-	if (value) < 0.4:
+	if (value) < 0.25:
 		return "0"
-	elif (value) < 0.6:
-		return "0.25"
-	elif (value) < 0.8:
-		return "0.5"		
+	elif (value) < 0.5:
+		return "1"
+	elif (value) < 0.75:
+		return "2"		
 	else:
-		return "0.75"	
+		return "3"	
+
+		
+def clusteringKMeans(values):
+	kmeans = KMeans(n_clusters = 4, random_state = 0).fit(values)
+	classifiedValues = kmeans.labels_
+	print("centers are: " + str(kmeans.cluster_centers_))
+	return classifiedValues

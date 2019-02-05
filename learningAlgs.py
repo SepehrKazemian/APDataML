@@ -30,6 +30,8 @@ from sklearn.metrics import recall_score
 from scipy import stats
 import pandas
 import warnings
+import dataManipulation as dataMan
+from sklearn.cluster import KMeans
 
 
 class learningAlgs:
@@ -54,15 +56,15 @@ class learningAlgs:
 		print("here")
 			
 	def threadCall(self):
-
-
-		kList = [60, 30, 20, 15, 10, 5]
+		#kList = [60, 30, 20, 15, 10, 5]
 		methodAlgs = ["NeuralNetwork", "NaiveBayes", "LogisticRegression"]
-		#kList = [20]
+		kList = [20]
 		
 		bestError = []
-		hiddenLayers = [1, 5, 10]
-		regularizer = ['l1', 'l2']
+#		hiddenLayers = [1, 5, 10]
+		hiddenLayers = [1]
+	#	regularizer = ['l1', 'l2']
+		regularizer = ['l1']
 		minErrorNN = 0
 		minErrorLR = 0
 		
@@ -127,12 +129,16 @@ class learningAlgs:
 				NNError = self.NeuralNetwork(self.Xtrain, self.Ytrain, self.Xtest, self.Ytest, hiddenLayers[x])
 				print("NeuralNetwork accuracy is: " + str(NNError))
 			
-			for x in range(len(regularizer)):
-				LRError = self.LogisticRegression(self.Xtrain, self.Ytrain, self.Xtest, self.Ytest, regularizer[x])
-				print("LinearRegression accuracy is: " + str(LRError))
+			# for x in range(len(regularizer)):
+				# print(self.Ytest)
+				# print(self.Ytrain)
+				# print(np.unique(self.Ytest))
+				# print(np.unique(self.Ytrain))
+				# LRError = self.LogisticRegression(self.Xtrain, self.Ytrain, self.Xtest, self.Ytest, regularizer[x])
+				# print("LinearRegression accuracy is: " + str(LRError))
 			
-			NBError = self.NaiveBayes(self.Xtrain, self.Ytrain, self.Xtest, self.Ytest)
-			print("NaiveBayes accuracy is: " + str(NBError))			
+			# NBError = self.NaiveBayes(self.Xtrain, self.Ytrain, self.Xtest, self.Ytest)
+			# print("NaiveBayes accuracy is: " + str(NBError))			
 			
 		
 		
@@ -186,74 +192,91 @@ class learningAlgs:
 #			self.NaiveBayes()
 			#self.NeuralNetwork(self.Xtrain, self.Ytrain, self.Xtest, self.Ytest)
 
+	#create two threads to find the testing and training files
+	#first it should check whether we have the analyzed dataset or not
 	def makeDataSet(self, k):
 		fileNameTest = "40017ad6b2e0test"
-		fileNameTrain = "40017ad6b2e0train"	
-		thread1 = Thread( target = self.plotting, args = (fileNameTest, k,))
-		thread2 = Thread( target = self.plotting, args = (fileNameTrain, k,) )
+		fileNameTrain = "40017ad6b2e0train"
+		print("creating threads\n")
+		thread1 = Thread( target = self.pickleChecker, args = (fileNameTest, k,))
+		thread2 = Thread( target = self.pickleChecker, args = (fileNameTrain, k,) )
 		thread1.start()
 		thread2.start()
 		thread1.join()
 		thread2.join()
 		
-	def plotting(self, fileName, k):
-		#print("plotting")
-#		fileName = fileNameArr[i]
-		model = "classification"
+	#check whether we have the analyzed dataset with feature engineering or not.
+	#if so, run the algorithm, otherwise check whether we have the the processed
+	#dataset or not
+	def pickleChecker(self, fileName, k):
+	
+		print("checking pickles\n")
+		model = "manualClassification"
 		timerInMinute = int(k)
 		numberOfSamples = timerInMinute * 12 #60 seconds / 5 seconds per sample
 		
-		# check pickle existed or not, if we have it, for sure we had splitted the data
-		#otherwise we have to do it, and save it
+		#check pickle existed or not, if we have it, for sure we had splitted the data
+		#otherwise we have to do it, and save it. Returns True or False
 		fileNameAns = self.functionCall(fileName, timerInMinute, numberOfSamples)
 		
 		#if we don't have the pickles search for csv file of data
-		print(fileName + " in plotting func")
+		print(fileName + " in plotting func\n")
 		if fileNameAns == False:
-		
 
+			print("we do not have the pickles, lets check processed data\n")
 			CSVStat, CU, Time = self.csvChecker(fileName, model)
 			
-			#if we have csv file:
-			if CSVStat == True:
-				self.createTimeSplitter(timerInMinute)
-				self.dataPoint(numberOfSamples, timerInMinute, fileName, CU, Time)
+			#if we have csv file we have to making it ready for feature engineering
+			#othewise we have to process the raw data
+			if CSVStat == False:
+				print("we do not have the processed data, going for processing\n")
+				if model == "KMeansClassification":
+					CU, Time = dataMan.dataSplitting(fileName, 0, "k")
+				elif model == "manualClassification":
+					CU, Time = dataMan.dataSplitting(fileName, 0, "man")
+				print("processing finished\n")
 				
-			else:
-				chanUtil, timeArr = dataSplitting(fileName, 0)
-				self.createTimeSplitter(timerInMinute)
-				self.dataPoint(numberOfSamples, timerInMinute, fileName, chanUtil, timeArr)
-				
-				
-		
-				
-			
-			
+			print("doing feature engineering\n")
+			self.createTimeSplitter(timerInMinute)
+			print(np.unique(CU))
+			self.dataPoint(numberOfSamples, timerInMinute, fileName, CU, Time)
 			
 
+	#checking the whether we processed the raw data previously or not
 	def csvChecker(self, fileName, model):
 		pathFile = "node1/CSV/" + fileName + ".csv"
-		print(str(fileName) + " is in csvChecker")
+		print(str(fileName) + " is in csvChecker\n")
 		if os.path.isfile(pathFile) == True:
+			print("we have the csv file: pulling out data\n")
 			#read the data from csv file
-			data = pandas.read_csv(pathFile, parse_dates=["time"])
+			headers = ['col1', 'CU', 'time']
+			parse_date = ['time']
+			data = pandas.read_csv(pathFile, header = None, names = headers, parse_dates = parse_date)
 			
 			#pulling the time data out
 			timeArr = data["time"]
 			
-			#pulling CU data out and convert it to a classifier or non classifier
-			if model == "classification":
-				chanUtil = data[["CU"]].values
+			#pulling CU data out and convert it to a classification or non classification problem
+			chanUtil = data[["CU"]].values
+			if model == "manualClassification":
+				print("doing manual clustering\n")
 				for i in range(len(chanUtil)):
-					chanUtil[i] = normalClassification(float(chanUtil[i]))
-			else:
-				chanUtil = data[["CU"]].values
-			chanUtil = chanUtil.reshape((len(chanUtil)))
-			#print(chanUtil.shape)
+					chanUtil[i] = dataMan.normalClassification(float(chanUtil[i]))
 			
+			elif model == "KMeansClassification":
+				print("doing K-means clustering\n")
+				chanUtil = dataMan.clusteringKMeans(chanUtil)
+					
+			
+			chanUtil = chanUtil.reshape((len(chanUtil)))
+			print(chanUtil)
+			print(np.unique(chanUtil))
+			
+			print("returning the processed raw data back\n")
 			return True, chanUtil, timeArr
 		
 		else:
+			print("processed raw data is not available\n")
 			return False, False, False
 			
 	
@@ -262,12 +285,14 @@ class learningAlgs:
 		return value.map(dates)
 	
 	
+	#looking for pickles (engineered feature matrix) to load
 	def functionCall(self, fileName, timerInMinute, numberOfSamples):
-		#print(str(fileName) + " is in functionCall")
+		print("looking for pickles (engineered feature matrix) to load\n")
 		fileNameSearchX = "X" + str(fileName) + str(timerInMinute) + ".txt"
 		fileNameSearchY = "Y" + str(fileName) + str(timerInMinute) + ".txt"
 		
 		if (os.path.isfile(fileNameSearchX) == True) and (os.path.isfile(fileNameSearchY) == True):
+			print("pickles have been found\n")
 			with open(fileNameSearchX, "rb") as f:
 				if "train" not in fileName:
 					self.Xtest = pickle.load(f)
@@ -283,25 +308,23 @@ class learningAlgs:
 			return True
 		
 		else:
+			print("pickles are not found\n")
 			return False
-			
-		# else:
-			# self.dataSplitting(fileName)
-			# self.createTimeSplitter(timerInMinute)
-			# self.dataPoint(numberOfSamples, timerInMinute, fileName)
 			
 	
 		
+	#we are optimizing the process by creating the numpy arrays to just
+	#replace the new data instead of adding them to array
 	def createTimeSplitter(self, timeSplitter):
-		#print(timeSplitter)
+		print("making the processed data ready for feature engineering")
 		splits = int((24 * 60) / (int(timeSplitter)))
 		self.timeSplit = np.zeros(splits)
 		
 		self.days = np.zeros(7)
 	
-	
+	#here we are making the features and targets for training and testing
 	def dataPoint(self, numberOfSamples, timerInMinute, fileName, chanUtil, timeArr):
-		#print(fileName + " in dataPoint func")
+		print("doing the feature engineering")
 		Ypred = 0
 		time.sleep(10)
 		
@@ -385,15 +408,15 @@ class learningAlgs:
 		#		print(Xarr.shape)
 			
 			
-			#Ypred = self.chanUtil[i + 241]
-			if chanUtil[i + numberOfSamples + 1] == 0:
-				Ypred = 0
-			elif chanUtil[i + numberOfSamples + 1] == 0.25:
-				Ypred = 1
-			elif chanUtil[i + numberOfSamples + 1] == 0.5:
-				Ypred = 2
-			elif chanUtil[i + numberOfSamples + 1] == 0.75:
-				Ypred = 3
+			Ypred = chanUtil[i + numberOfSamples + 1]
+			# if chanUtil[i + numberOfSamples + 1] == 0:
+				# Ypred = 0
+			# elif chanUtil[i + numberOfSamples + 1] == 0.25:
+				# Ypred = 1
+			# elif chanUtil[i + numberOfSamples + 1] == 0.5:
+				# Ypred = 2
+			# elif chanUtil[i + numberOfSamples + 1] == 0.75:
+				# Ypred = 3
 
 
 			if "train" in fileName:
