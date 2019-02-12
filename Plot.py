@@ -11,21 +11,8 @@ import os
 import subprocess
 import learningAlgs as classImportLA
 import dataManipulation as dataMan
-
-from dateutil.relativedelta import relativedelta
-import datetime
-import time
-import matplotlib.pyplot as plt
-import plotly.plotly as py
-import plotly.graph_objs as go
-import plotly.offline as offline
-import pandas as pd
-from dateutil import tz
-import os
-import subprocess
 import numpy as np
 import warnings
-
 
 
 class plottData:
@@ -51,7 +38,9 @@ class plottData:
 	def prepration(self):
 	
 		channelPlotterBool = 0
+		channelBasedFileExist = 0
 		channelPlotterBool = input("Plotting frequency based [2], channel based [1], or AP based [0]? (default is 0) ")
+		plotterBool = int(input("do you want to plot the data? Yes[1], No[0]"))
 		fileName = ""
 		
 		print(channelPlotterBool)
@@ -59,7 +48,6 @@ class plottData:
 		if int(channelPlotterBool) != 0 and int(channelPlotterBool) != 1 and int(channelPlotterBool) != 2:
 			return 0
 			
-		print("1")	
 		#finding all the files in the folder
 		nodeNumber = input("what is the node number? ")
 		files = subprocess.Popen("ls " + "node" + str(nodeNumber) + "/extractedData/", shell=True, stdout=subprocess.PIPE)
@@ -68,7 +56,6 @@ class plottData:
 		strName = ""
 		
 		
-		print("2")
 		for i in range(len(str(fileNames))):
 			if str(fileNames[i]) != "\n":
 				strName += str(fileNames[i])
@@ -84,67 +71,58 @@ class plottData:
 		prevTimeStamp = ""
 		result = 0
 		
-		#check did we process raw data for channel-based or not
+		#check did we process raw data for channel-based or not by checking the existence of CSV file
 		if int(channelPlotterBool) == 1:
-			result = self.CSVCheck(fileName, nodeNumber, channelPlotterBool)
-		
-		#if we did not proccess raw data for channel-based or it is not for channel-based at all:
-		if int(channelPlotterBool) != 1 or (int(channelPlotterBool) == 1 and result == False):
-			print("3")
-			#choosing each file in the folder for the plotting
-			print("existing files are: " + str(fileNameArr))
-			for i in range(len(fileNameArr)):
-				time.sleep(0.5)
-				fileName = fileNameArr[i]
-				if int(channelPlotterBool) != 1:
-					result = self.CSVCheck(fileName, nodeNumber, channelPlotterBool)
-				
-				if (int(channelPlotterBool) != 1 and result == False) or int(channelPlotterBool) == 1:
-					print("reading file with the name: " + str(fileName))
-					cu = ""
-					lineCounter = 0
-					fileNameStr = "node" + str(nodeNumber) + "/extractedData/" + str(fileName)
-					#sending file for data extraction
-					dataMan.dataSplitting(fileName, channelPlotterBool, 0)
-					#now we have files for that
-		
-		
-	def CSVCheck(self, fileName, nodeNumber, channelPlotterBool):
-		obj = classImportLA.learningAlgs()
-		if int(channelPlotterBool) == 1:
-			for i in range(1, 4):
-				if i == 1:
-					num = 1
-				elif i == 2:
-					num = 6
-				elif i == 3:
-					num = 11
-				fileName = "channel" + str(num)
-				CSVStat, CU, Time = obj.csvChecker(fileName, 0)
-
-				if CSVStat == True:
-					print("here it is\n")
-					self.plotting(fileName, CU, Time, nodeNumber, channelPlotterBool)
-				
+			for i in range(1, 11, 5): #checking channels 1, 6, 11  
+				fileName = "channel" + str(i)
+				ans = os.path.isfile(fileName)
+				if ans == False:
+					channelBasedFileExist = 0
+					break
 				else:
-					return False
-						
-					
-		else:
-			CSVStat, CU, Time = obj.csvChecker(fileName, 0)
-			if CSVStat == True:
-				print("here it is")
-				if int(channelPlotterBool) == 0:
-					self.plotting(fileName, CU, Time, nodeNumber, channelPlotterBool)
-					
-				else: #channelPlotterBool == 2
-					CU = np.round(CU, decimals = 5)
-					CUVal, count = np.unique(CU, return_counts = True)
-					self.plotting(fileName, CUVal, count, nodeNumber, channelPlotterBool)
-				return True
+					channelBasedFileExist = 1
+			
+			if channelBasedFileExist == 0:
+				for i in range(1, 11, 5): 
+					fileName = "channel" + str(i)
+					ans = os.path.isfile(fileName)
+					if ans == True:
+						os.system("rm -f " + str(fileName))
+				for i in range(len(fileNameArr)):
+					self.processRawDataCaller(fileNameArr[i], nodeNumber, channelPlotterBool)
 				
-			else:
-				return False
+				LA = classImportLA.learningAlgs()
+				for i in range(1, 11, 5): 
+					fileName = "channel" + str(i)
+					stat, chanUtil, timeArr = LA.csvChecker(fileName, 0)
+					if int(channelPlotterBool) == 1:
+						self.plotting(fileName, chanUtil, timeArr, nodeNumber, channelPlotterBool)
+					else:
+						return chanUtil, timeArr
+						
+						
+		
+		#check did we process raw data for AP-based or not by checking the existence of CSV file
+		if int(channelPlotterBool) == 0 or int(channelPlotterBool) == 2:
+			LA = classImportLA.learningAlgs()
+			for i in range(len(fileNameArr)):
+				pathFile = "node1/CSV/" + fileNameArr[i] + ".csv"
+				if os.path.isfile(pathFile) == False:
+					self.processRawDataCaller(fileNameArr[i], nodeNumber, channelPlotterBool)
+				stat, chanUtil, timeArr = LA.csvChecker(fileNameArr[i], 0)
+				if int(channelPlotterBool) == 1:
+					self.plotting(fileNameArr[i], chanUtil, timeArr, nodeNumber, channelPlotterBool)
+				else:
+					return chanUtil, timeArr			
+		
+			
+
+	def processRawDataCaller(self, fileName, nodeNumber, channelPlotterBool):
+		fileNameStr = "node" + str(nodeNumber) + "/extractedData/" + str(fileName)
+		#sending file for data extraction
+		dataMan.dataSplitting(fileName, channelPlotterBool, 0)
+		#now we have files for that
+		
 			
 
 	def plotting(self, fileName, CU, Time, nodeNumber, channelPlotterBool):

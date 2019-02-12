@@ -153,10 +153,10 @@ def dataSplitting(fileName, channelBasedBool, classifier):
 					maxVal = int(cu)
 					counter = 1
 				
-				elif currTimeStamp - prevTime >= 5:
+				elif currTimeStamp - prevTime >= 3:
 					
 					
-					while int((currTimeStamp - prevTime) / 5) > 0:
+					while int((currTimeStamp - prevTime) / 3) > 0:
 						currTimeStampUTC = datetime.datetime.fromtimestamp(prevTime).strftime('%Y-%m-%d %H:%M:%S')
 						currTimeStampUTC = datetime.datetime.strptime(currTimeStampUTC, '%Y-%m-%d %H:%M:%S')
 						central = offset + currTimeStampUTC
@@ -172,14 +172,12 @@ def dataSplitting(fileName, channelBasedBool, classifier):
 							chanUtil = np.append(chanUtil, normalClassification(maxVal/255))
 
 
-						if maxVal > 255:
-							print("bilakh " + str(maxVal))
-						prevTime = prevTime + 5
+						prevTime = prevTime + 3
 						
 					maxVal = 0
 					
 				
-				elif currTimeStamp - prevTime < 5:
+				elif currTimeStamp - prevTime < 3:
 					if maxVal < int(cu):
 						maxVal = int(cu)
 				

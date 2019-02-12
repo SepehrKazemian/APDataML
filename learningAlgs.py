@@ -211,7 +211,7 @@ class learningAlgs:
 	def pickleChecker(self, fileName, k):
 	
 		print("checking pickles\n")
-		model = "manualClassification"
+		model = "KMeansClassification"
 		timerInMinute = int(k)
 		numberOfSamples = timerInMinute * 12 #60 seconds / 5 seconds per sample
 		
