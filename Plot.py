@@ -126,15 +126,15 @@ class plottData:
 			
 
 	def plotting(self, fileName, CU, Time, nodeNumber, channelPlotterBool):
-		print(Time)
-		print(CU)
+		# print(Time)
+		# print(CU)
 		if int(channelPlotterBool) == 2: #Time is Count here
 			count = Time
 			data = [go.Scatter( x = CU, y = count )]
 		else:
 			data = [go.Scatter( x = Time, y = CU )]
 		
-		fileName = str(fileName) + " mode" + channelPlotterBool
+		fileName = str(fileName) + " mode" + str(channelPlotterBool)
 		titleAP = "file name is : " + str(fileName)
 		print("yoooohooooooooooooooooooooooooooooooo")
 		layout = go.Layout(title= titleAP, showlegend = False)
