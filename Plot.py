@@ -35,7 +35,7 @@ class plottData:
 		self.chanUtil = []
 			
 		
-	def prepration(self):
+	def prepration(self, fileName):
 	
 		channelPlotterBool = 0
 		channelBasedFileExist = 0
@@ -126,8 +126,8 @@ class plottData:
 			
 
 	def plotting(self, fileName, CU, Time, nodeNumber, channelPlotterBool):
-		# print(Time)
-		# print(CU)
+		#print(Time)
+		#print(CU)
 		if int(channelPlotterBool) == 2: #Time is Count here
 			count = Time
 			data = [go.Scatter( x = CU, y = count )]

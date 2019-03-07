@@ -31,8 +31,11 @@ from scipy import stats
 import pandas
 import warnings
 from sklearn.cluster import KMeans
+import logging
+
 
 def dataSplitting(fileName, channelBasedBool, classifier):
+	logging.basicConfig(filename='example.log',level=logging.DEBUG)
 	print("salam")
 	#print(fileName + " in datasplitting func")
 	now_timestamp = time.time()
@@ -46,6 +49,7 @@ def dataSplitting(fileName, channelBasedBool, classifier):
 	counter = 0
 	preMaxVal = 0
 	channelCheck = 0
+	maxVal = 0
 	fileRead = "node1/extractedData/" + str(fileName)
 	fileWrite = str(fileName)
 		
@@ -106,6 +110,7 @@ def dataSplitting(fileName, channelBasedBool, classifier):
 					break
 			
 			if int(channelBasedBool) == 1 and int(channelCheck) != int(channel):
+				print("channel boolean is: " + str(channelBasedBool))
 				if channelCheck != 0: #channelCheck != 0 (initial value) and it is != channel which means channel changed
 					print("channel changed")
 					pandasWriting(csvArrTime, csvArrCU, fileWrite)
@@ -149,35 +154,61 @@ def dataSplitting(fileName, channelBasedBool, classifier):
 			
 			try:
 				if counter == 0:
+					# logging.info("first time")
+					# logging.info(str(currTimeStamp))
+					# logging.info(str(prevTime))
+					# logging.info(str(int(cu)))
+					# logging.info(str(maxVal))
+
+					
 					prevTime = currTimeStamp
 					maxVal = int(cu)
 					counter = 1
 				
-				elif currTimeStamp - prevTime >= 3:
+				elif currTimeStamp - prevTime >= 5:
 					
+					# logging.info("second time")
+					# logging.info(str(currTimeStamp))
+					# logging.info(str(prevTime))
+					# logging.info(str(int(cu)))
+					# logging.info(str(maxVal))
 					
-					while int((currTimeStamp - prevTime) / 3) > 0:
+					while int((currTimeStamp - prevTime) / 5) > 0:
 						currTimeStampUTC = datetime.datetime.fromtimestamp(prevTime).strftime('%Y-%m-%d %H:%M:%S')
 						currTimeStampUTC = datetime.datetime.strptime(currTimeStampUTC, '%Y-%m-%d %H:%M:%S')
 						central = offset + currTimeStampUTC
+						#central = currTimeStampUTC
 						
 						#it seems sickit learn cannot work with datetime, so we have to reconvert it to
 						#values
-						centralTimeStamp = time.mktime(datetime.datetime.strptime(str(central), "%Y-%m-%d %H:%M:%S").timetuple())
+						centralTimeStamp = (datetime.datetime.strptime(str(central), "%Y-%m-%d %H:%M:%S") - datetime.datetime(1970,1,1)).total_seconds()
 						
 						csvArrTime.append(central)
 						timeArr.append(central)
-						csvArrCU.append(maxVal/255)
+						csvArrCU.append(maxVal)
 						if classifier == "man":
 							chanUtil = np.append(chanUtil, normalClassification(maxVal/255))
 
+						# logging.info("third time")
+						# logging.info(str(central))
+						# logging.info(str(currTimeStamp))
+						# logging.info(str(prevTime))
+						# logging.info(str(int(cu)))
+						# logging.info(str(maxVal))
 
-						prevTime = prevTime + 3
-						
+						prevTime = prevTime + 5
+					
+
+					
 					maxVal = 0
 					
 				
-				elif currTimeStamp - prevTime < 3:
+				elif currTimeStamp - prevTime < 5:
+					# logging.info("forth time")
+					# logging.info(str(currTimeStamp))
+					# logging.info(str(prevTime))
+					# logging.info(str(int(cu)))
+					# logging.info(str(maxVal))
 					if maxVal < int(cu):
 						maxVal = int(cu)
 				
