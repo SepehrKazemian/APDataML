@@ -35,13 +35,13 @@ class plottData:
 		self.chanUtil = []
 			
 		
-	def prepration(self, fileName):
+	def prepration(self):
 	
 		channelPlotterBool = 0
 		channelBasedFileExist = 0
 		channelPlotterBool = input("Plotting frequency based [2], channel based [1], or AP based [0]? (default is 0) ")
 		plotterBool = int(input("do you want to plot the data? Yes[1], No[0]"))
-		fileName = ""
+		#fileName = ""
 		
 		print(channelPlotterBool)
 		
@@ -56,13 +56,14 @@ class plottData:
 		strName = ""
 		
 		
-		for i in range(len(str(fileNames))):
-			if str(fileNames[i]) != "\n":
-				strName += str(fileNames[i])
-			else:
-				fileNameArr.append(strName)
-				strName = ""
+		# for i in range(len(str(fileNames))):
+			# if str(fileNames[i]) != "\n":
+				# strName += str(fileNames[i])
+			# else:
+				# fileNameArr.append(strName)
+				# strName = ""
 				
+		fileNameArr = ['40017ad6b2e0-6', '500f801e28a0-6']
 				 
 		preHour = ''
 		counter = -1
@@ -112,8 +113,8 @@ class plottData:
 				stat, chanUtil, timeArr = LA.csvChecker(fileNameArr[i], 0)
 				if int(channelPlotterBool) == 1:
 					self.plotting(fileNameArr[i], chanUtil, timeArr, nodeNumber, channelPlotterBool)
-				else:
-					return chanUtil, timeArr			
+				# else:
+					# return chanUtil, timeArr			
 		
 			
 

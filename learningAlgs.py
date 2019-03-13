@@ -273,6 +273,7 @@ class learningAlgs:
 			print(np.unique(chanUtil))
 			
 			print("returning the processed raw data back\n")
+			time.sleep(1)
 			return True, chanUtil, timeArr
 		
 		else:

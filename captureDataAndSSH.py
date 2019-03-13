@@ -4,6 +4,7 @@ import subprocess
 from subprocess import Popen, PIPE
 import os
 import datetime
+import logging
 #import urllib2.request
 
 class captureAndSend():
@@ -22,26 +23,45 @@ class captureAndSend():
 		self.cyberaDirectory = "ubuntu@199.116.235.145:" + str(self.cybDirect)
 		self.secondChar = None
 		self.notUp = []
-#		self.file = open("log.txt", "w")
+		
+		#************************NUMBER OF WIFI DRIVERS********************
+		self.numChipsets = int(sys.argv[3])
 
 	def threads(self):
 
 		#***********************STARTING THREADS***********************************
-		chipset = "wlan0"
-		print(chipset)
+		chipset1 = "wlan0"
+		print(chipset1)
 		now = datetime.datetime.now()
-		with open("log.txt", "a") as log:
-			log.write(str(now.strftime("%Y-%m-%d %H:%M"))+ chipset + " \n ")
+		# with open("log.txt", "a") as log:
+			# log.write(str(now.strftime("%Y-%m-%d %H:%M"))+ chipset + " \n ")
 #		file.write(chipset)
-		thread = threading.Thread( target = self.hopping, args = (chipset,))
-		thread2 = threading.Thread(target = self.capturing, args = (chipset,))
-		print("thread name is: " + str(thread))
-		thread.start()
-		thread2.start()
+		if self.numChipsets == 2: #in this case wlan0 is for 5ghz
+			chipset2 = "wlan1"
+			
+			thread1Chip1 = threading.Thread(target = self.hopping5GHz, args = (chipset1,))
+			thread2Chip1 = threading.Thread(target = self.capturing, args = (chipset1,))
+			
+			thread1Chip2 = threading.Thread(target = self.hopping24GHz, args = (chipset2,))
+			thread2Chip2 = threading.Thread(target = self.capturing, args = (chipset2,))			
+			
+		
+			thread1Chip1.start()
+			thread2Chip1.start()
+			thread1Chip2.start()
+			thread2Chip2.start()
 
+		elif self.numChipsets == 1:			
+			thread1Chip1 = threading.Thread(target = self.hopping24GHz, args = (chipset1,))
+			thread2Chip1 = threading.Thread(target = self.capturing, args = (chipset1,))		
+		
+			thread1Chip1.start()
+			thread2Chip1.start()		
 
 
 	def capturing(self, chipset):
+		loggerName = str(chipset) + "Logger.log"
+		logging.basicConfig(loggerName, format='%(levelname)s:%(message)s', level=logging.DEBUG)
 		progStart = 0
 		iterations = 0		
 		captureNo = 0
@@ -52,92 +72,68 @@ class captureAndSend():
 		while True:
 			iterations += 1
 			#************************LOGGING******************************
-			if iterations%10 == 0:
+			if iterations%30 == 0:
 				now = datetime.datetime.now()
-				with open("log.txt", "a") as log:
-					log.write(str(now.strftime("%Y-%m-%d %H:%M")) + " number of iterations are: " + str(iterations) + "\n")
-
+				logging.info(str(now.strftime("%Y-%m-%d %H:%M")) + " number of iterations are: " + str(iterations) + "\n")
 
 			#************************RUN THE CAPTURING FOR THE FIRST TIME***********************************
 			if start == 0:
-				tcpdumpCommand = "tcpdump -i " + chipset + " -en -vvs 0 link[0]==0x80 -w node" + self.nodeNo + "-" + str(captureNo)
+				#tcpdumpCommand = "tcpdump -i " + chipset + " -en -vvs 0 link[0]==0x80 -w node" + self.nodeNo + "-" + str(captureNo)
 				
 				#*****************READ FROM THE FILE TO CONTINUE THE PREVIOUS ONE***********************
 				if progStart == 0:
-
-					with open("node.txt", "r") as txt:
-						cont = txt.readline()
-
-				#	for i in range(3, len(cont)):
-#						if cont[i] == "e":
-#							continue
-#						elif cont[i] == "-":
-#							change = 1
-#						elif change == 0:
-#							self.nodeNo += cont[i]
-#						elif change == 1:
-#							captureNo += cont[i]
-
+					
 					progStart = 1
-					if cont != "":
-						captureNo = int(cont[0:len(cont)-1])
-						print(captureNo)
+					if os.path.isfile("node.txt") == True:
+						logging.info("we have the node.txt\n")
+						if (os.stat("node.txt").st_size == 0) == False:
+							logging.info("node.txt is not empty\n")
+							with open("node.txt", "r") as txt:
+								cont = txt.readline()
+								logging.info("node.txt value is: " + str(int(cont)) + "\n")
+						else:
+							cont = 0
+							logging.info("node.txt is empty so value is: " + str(int(cont)) + "\n")
+					else:
+						logging.info("we dont have the file so make it \n")
+						os.system("touch node.txt")
+						cont = 0
+						
+					captureNo = int(cont)
+
 
 				name = "node.txt"
-				with open(name, "w") as txt:
-					txt.write(str(captureNo))
-#					proc1 = Popen(["scp", "-i", self.sshName , fileName, self.cyberaDirectory])
-#					print("file name is uploaded to be checked")
+
 
 				fileName = "node" + self.nodeNo + "." + str(captureNo)
 				
+				logging.info("capture number is: "+ str(captureNo) +" and file Name is: " + str(fileName) + "\n")
 		
 				self.proc = Popen(["tcpdump", "-i", chipset, "-en", "-vvs", "0", "link[0]==0x80", "-w", "node"+self.nodeNo+"."+str(captureNo)])
-				print(self.proc.pid)
 				now = datetime.datetime.now()
-				with open("log.txt", "a") as log:                        
-					log.write(str(now.strftime("%Y-%m-%d %H:%M"))+ " the process id is: " + str(self.proc.pid) + "\n") 
+				logging.info(str(now.strftime("%Y-%m-%d %H:%M"))+ " the process id is: " + str(self.proc.pid) + "\n")
 				start += 1
 
 			#**********************CHECK THE SIZE OF THE FILE*******************************
 			elif start != 0:
 				try:
-					statinfo = os.stat(fileName)
-					size = statinfo.st_size
-					with open("log.txt", "a") as log:
-						log.write(str(now.strftime("%Y-%m-%d %H:%M")) + " size of the file is: " + str(size) + " for the file " + fileName + "\n")
+					size = os.stat(fileName).st_size
+					logging.info(str(now.strftime("%Y-%m-%d %H:%M")) + " size of the file is: " + str(size) + " for the file " + fileName + "\n")
 				
 					if size > 100000000:
 						now = datetime.datetime.now()
-						with open("log.txt", "a") as log:                                                              
-							log.write(str(now.strftime("%Y-%m-%d %H:%M"))+ "the size is big so transfer \n")
+						logging.info(str(now.strftime("%Y-%m-%d %H:%M"))+ "the size is big enough for saving \n")
 #						self.file.write("the size is getting big enough to transfer")
-						os.system("kill -9 " + str(self.proc.pid))
 						start = 0
-
-						#*************************SOLVE NAMING PROBLEM IN A LONG RUN********************
-#						if captureNo =< 100000:
 						captureNo += 1
-#						elif captureNo > 100000:
-#							if self.secondChar == None:
-#								self.secondChar = 0
-#								self.nodeNo += str(secondChar)
-#							else:
-#								self.nodeNo = self.nodeNo[0: len(self.nodeNo) - len(str(self.secondChar))]
-#								self.secondChar += 1
-#								self.nodeNo += str(secondChar)
-#							captureNo = 0
+						os.system("kill -9 " + str(self.proc.pid))
 						
 
 						thread3 = threading.Thread(target = self.sendingFunc, args = (fileName,))
-						with open("log.txt", "a") as log:
-							log.write("uploading function is called")
+						logging.info("uploading function is called")
 						thread3.start()
-						thread3.join()
-						with open("log.txt", "a") as log:
-							log.write("uploading thread comes back")
-#						thread3.join()
-						#upload via ssh and exit program
+						
+							
 				except FileNotFoundError:
 					now = datetime.datetime.now()
 					with open("log.txt", "a") as log:                                                              
@@ -151,9 +147,9 @@ class captureAndSend():
 	def sendingFunc(self, fileName):
 		#*************CONNECTION TEST*********************
 		testConn = os.system("ssh -q -o BatchMode=yes -o ConnectTimeout=2 -i " + self.sshName +  " ubuntu@199.116.235.145  echo ok 2>&1")
-		with open("log.txt", "a") as log:
-			log.write("test connection is: " + str(testConn)+ "\n")
-		print(testConn)
+		logging.info("test connection is: " + str(testConn)+ "\n")
+
+			
 		if testConn == 0:
 		#***************CONNECTION IS OK WITH CYBERA**********************
 
@@ -162,13 +158,10 @@ class captureAndSend():
 				command = ("scp " + fileName + " -i " + self.sshName + " ubuntu@199.116.235.145:/home/ubuntu/data")
 				proc1 = Popen(["scp", "-i", self.sshName , fileName, self.cyberaDirectory])
 				sts = os.waitpid(proc1.pid, 0)
-				with open("log.txt", "a") as log:
-					log.write("I am waiting")
+				logging.info("I am waiting\n")
 				now = datetime.datetime.now()
-				with open("log.txt", "a") as log:                                                              
-					log.write(str(now.strftime("%Y-%m-%d %H:%M"))+ "One file is uploaded " + str(fileName) + " sts is: " +str(sts) + "\n")
-#				self.file.write("one file is uploaded with sts of " + str(sts) + " and name of " + str(fileName) + "\n")
-				print("one file uploaded")
+				logging.info(str(now.strftime("%Y-%m-%d %H:%M"))+ "One file is uploaded " + str(fileName) + " sts is: " +str(sts) + "\n")
+				logging.info("one file uploaded\n")
 				os.system("rm "+ fileName)
 			else:
 
@@ -179,47 +172,49 @@ class captureAndSend():
 					proc1 = Popen(["scp", "-i", self.sshName, self.notUp[i], self.cyberaDirectory])
 					sts = os.waitpid(proc1.pid, 0)
 					now = datetime.datetime.now()
-					with open("log.txt", "a") as log:                                                              
-						log.write(str(now.strftime("%Y-%m-%d %H:%M"))+str(self.notUp[i]) + 'is done with sts of ' + str(sts) + '\n')
+					logging.info(str(now.strftime("%Y-%m-%d %H:%M"))+str(self.notUp[i]) + 'is done with sts of ' + str(sts) + '\n')
 					print(str(self.notUp[i]) + " is done")					
 					os.system("rm " + self.notUp[i])
 				self.notUp.clear()
 				now = datetime.datetime.now()
-				with open("log.txt", "a") as log:                                                              
-					log.write(str(now.strftime("%Y-%m-%d %H:%M"))+ "all files are uploaded\n")
+				logging.info(str(now.strftime("%Y-%m-%d %H:%M"))+ "all files are uploaded\n")
 #				self.file.write("all files are uploaded")
 		else:
 		#****************NO CONNECTION WITH CYBERA*****************************
 			self.notUp.append(fileName)
 			now = datetime.datetime.now()
-			with open("log.txt", "a") as log:                                                              
-				log.write(str(now.strftime("%Y-%m-%d %H:%M"))+ "no connection, files are: " + str(self.notUp) + "\n")
-#			self.file.write("no connection to upload the file")
-	#		self.file.write("list is " + str(self.notUp))
-			
+			logging.info(str(now.strftime("%Y-%m-%d %H:%M"))+ "no connection, files are: " + str(self.notUp) + "\n")
+
+		logging.info("uploading thread ended")	
 		
 
-	def hopping(self, chipset):
+	def hopping24GHz(self, chipset):
 		i = 1
 		while True:
 			proc = Popen("iwconfig " + chipset + " channel " + str(i), stdout = PIPE, shell = True)
-			time.sleep(1.5)
+			time.sleep(1)
 			if i == 1:
 				i = 6
 			elif i == 6:
 				i = 11
 			elif i == 11:
 				i = 1
-
-	def func2():
+				
+	def hopping5GHz(self, chipset):
+		arrOfChannels = [36, 40, 44, 48, 52, 56, 60, 64, 100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140, 144, 149, 153, 157, 161, 165]
+		i = 0
 		while True:
-			print(2)
+			proc = Popen("iwconfig " + chipset + " channel " + str(arrOfChannels[i]), stdout = PIPE, shell = True)
+			time.sleep(1)
+			i += 1
+			if i = len(arrOfChannels):
+				i = 0
 
 
 if __name__ == "__main__":
-	if len(sys.argv) == 3:
+	if len(sys.argv) == 4:
 		obj = captureAndSend()
 		obj.threads()
 	else:
-		print("enter nodeNo, ssh private key directory, and update the node.txt file")
+		print("enter nodeNo, ssh private key directory, and update the node.txt file, number of wifi drivers")
 	
