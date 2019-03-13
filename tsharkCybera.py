@@ -9,22 +9,36 @@ import gzip
 class tshark():
 	def __init__(self):
 		self.totalLength = 0
-		self.nodeCounter = ["439", "439"]
+		with open("node1.txt", "r") as txt:
+			node1Content = txt.readline()
+		with open("node2.txt", "r") as txt:
+			node2Content = txt.readline()
+		if node1Content == "":
+			node1Content = "1"
+		if node2Content == "":
+			node2Content = "1"
+
+		self.nodeCounter = [node1Content[0:len(node1Content)-1], node2Content[0:len(node2Content)-1]]
+		print(self.nodeCounter)
 		self.secondChar = None
 
 	def continuousReading(self):
-		nodeName2 = 'node2.'
+		nodeName1 = 'node1'
+		nodeName2 = 'node2'
+		thread1 = threading.Thread(target = self.runningCommand, args = (nodeName1, 0))
 		thread2 = threading.Thread(target = self.runningCommand, args = (nodeName2, 1))
+		thread1.start()
 		thread2.start()
 
 
 	def runningCommand(self, nodeName, arrIndex):
-		fileName = ""
-		counter = 0
+		fileName = nodeName + "." + str(self.nodeCounter[arrIndex])
+		print(fileName)	
+		nodeText = str(nodeName) + ".txt"
 		while True:
-			fileName = nodeName + str(self.nodeCounter[arrIndex])
-			os.system("cp " + fileName + ".gz ./" + fileName + "cp.gz") 
-			os.system("gunzip " + fileName + ".gz")
+			fileName = nodeName + "." + str(self.nodeCounter[arrIndex])
+			with open(nodeText, "w") as textStat:
+				textStat.write(str(self.nodeCounter[arrIndex]))
 			if os.path.isfile(fileName) == True:
 				print(fileName + " file is here")
 #			if os.path.isfile(fileName) == False:
@@ -33,31 +47,18 @@ class tshark():
 #				startingName = 'node1.' + str(secondCounter)
 #				num = 0
 #				fileName = startingName + str(num)
-#				f = gzip.open(fileName, 'r')
-#				content = f.read()
-#				f.close()
-#				print(content)
 				tsharkCommand = 'tshark -r ' + fileName + ' -Tfields -e wlan.ta -e wlan_radio.channel -e wlan.qbss.cu -e wlan_radio.signal_dbm -e frame.time -E separator=/s'
 			#should call pipe for the subprocess to read and write simultaneously
 				proc = Popen(tsharkCommand, stdout = PIPE, shell = True)
 	
 				while proc.poll() is None:
-					time.sleep(0.000001)
+					time.sleep(0.00001)
 					#for every incoming line we should block and then read it
 					line = proc.stdout.readline()
 #					print(line.decode('ascii'))
 #					print(line)
 					self.analyze(line.decode('ascii'), arrIndex)
-
-				self.nodeCounter[arrIndex] = str(int(self.nodeCounter[arrIndex]) + 1)	
-				counter += 1
-				os.system("rm " + fileName)
-			else:
-				print(fileName)
-				break
-
-
-			'''			
+			
 				with open(fileName, 'rb') as inFile:
 					content = inFile.read()
 				gzName = fileName + ".gz"
@@ -74,21 +75,25 @@ class tshark():
 
 				os.system("rm " + fileName)
 				os.system("rm " + gzName)
-				if int(self.nodeCounter[arrIndex]) < 100000:
-					self.nodeCounter[arrIndex] = str(int(self.nodeCounter[arrIndex]) + 1)
-				elif int(self.nodeCounter[arrIndex]) >= 100000:
-					if self.secondChar == None:
-						self.secondChar = 0
-						self.nodeCounter[arrIndex] += str(self.secondChar)
-					else:
-						self.nodeCounter[arrIndex] = self.nodeCounter[arrIndex][0: len(self.nodeCounter[arrIndex]) - len(str(self.secondChar))]
-						self.secondChar += 1
-						self.nodeCounter[arrIndex] += str(self.secondChar)
-					self.nodeCounter[arrIndex] = '0'
+#				if int(self.nodeCounter[arrIndex]) =< 100000:
+				self.nodeCounter[arrIndex] = str(int(self.nodeCounter[arrIndex]) + 1)
+#				nodeText = str(nodeName) + "txt"	
+#				with open(nodeText, "w") as textStat:
+#					textStat.write(self.nodeCounter[arrIndex])
+	#			elif int(self.nodeCounter[arrIndex]) > 100000:
+	#				if self.secondChar == None:
+	#					self.secondChar = 0
+	#					nodeName += str(self.secondChar)
+	#				else:
+	#					nodeName = nodeName[0: len(nodeName) - len(str(self.secondChar))]
+	#					self.secondChar += 1
+	#					nodeName += str(self.secondChar)
+	#				self.nodeCounter[arrIndex] = '0'
+					
 					
 		
 			time.sleep(100)
-			'''
+
 
 			
 	def analyze(self, line, arrIndex):
@@ -119,7 +124,7 @@ class tshark():
 			
 			else:
 				counter += 1
-#		print(line)	
+		
 #		print(macAdd)
 #		print(channel)
 #		print(cu)
@@ -129,7 +134,6 @@ class tshark():
 				file.write(time + " " + channel + " " + cu + " " + sig + "\n")
 		
 		else:
-			print(line)
 			print("macAdd is: " + str(macAdd))
 			
 			
