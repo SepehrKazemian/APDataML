@@ -73,20 +73,21 @@ class tshark():
 				print(gzName + " is completed")
 				
 				#uploading files into gdrive as backup/ up to 4 device is supported in this code
+				
 				if arrIndex == 0:
-					os.system("/home/ubuntu/gdrive-linux-x64 upload --parent 1KyFUjKDHIR5hapu02re-b7z5cf2mBEDf " + gzName )
+					os.system("/home/ubuntu/gdrive-linux-x64 upload --parent 1IEkfqmb0F0qqWwjlwbPf5CIsveKTA08L " + gzName )
 					print(gzName + " is uploaded")
 
 				elif arrIndex == 1:
-					os.system("/home/ubuntu/gdrive-linux-x64 upload --parent 101ltxcgr5dyChf5JEG913pds-uzSZ1sK " + gzName )
+					os.system("/home/ubuntu/gdrive-linux-x64 upload --parent 1QU48uxFL7l6LSiFYC9YNP420D6dl676r " + gzName )
 					print(gzName + " is uploaded")
 					
 				elif arrIndex == 2:
-					os.system("/home/ubuntu/gdrive-linux-x64 upload --parent 101ltxcgr5dyChf5JEG913pds-uzSZ1sK " + gzName )
+					os.system("/home/ubuntu/gdrive-linux-x64 upload --parent 1XjaSLNSbjop_4nAzIpF0aZx_bP3cAL4f " + gzName )
 					print(gzName + " is uploaded")
 
 				elif arrIndex == 3:
-					os.system("/home/ubuntu/gdrive-linux-x64 upload --parent 101ltxcgr5dyChf5JEG913pds-uzSZ1sK " + gzName )
+					os.system("/home/ubuntu/gdrive-linux-x64 upload --parent 1tMaRCP6HzARxU8mgDmkai90U3_hlD4ip " + gzName )
 					print(gzName + " is uploaded")
 
 				os.system("rm " + fileName)
