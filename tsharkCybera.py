@@ -3,24 +3,27 @@
 import threading, time
 import subprocess
 from subprocess import Popen, PIPE
-import os
+import os, sys
 import gzip
 
 class tshark():
 	def __init__(self):
 		self.totalLength = 0
-		self.numbNodes = sys(arv[1])
-		self.nodeCounter = [0 for i in range(self.numbNodes)]
+		self.numbNodes = (sys.arv[1])
+		self.nodeCounter = [0 for i in range(2 * self.numbNodes)]
 		
 		#based on number of nodes that we have, we create or check the previous values of read data
-		for i in range(1, self.numbNodes + 1):
-			nodeCounterName = "node" + i + ".txt"
+		for i in range(self.numbNodes * 2):
+			if i%2 == 0:
+				nodeCounterName = "24node" + str(math.floor(i / 2) + 1) + ".txt"
+			elif i%2 == 1:
+				nodeCounterName = "5node" + str(math.floor(i / 2) + 1) + ".txt"
 			if os.path.isfile(nodeCounterName) == True:
 				if (os.stat(nodeCounterName).st_size == 0) == False:
 					with open(nodeCounterName, "r") as txt:
-						self.nodeCounter[i - 1] = str(int(txt.readline()))
+						self.nodeCounter[i] = str(int(txt.readline()))
 				else:
-					self.nodeCounter[i - 1] = str(0)
+					self.nodeCounter[i] = str(0)
 			else:
 				os.system("touch node1.txt")
 				self.nodeCounter[i - 1] = str(0)	
@@ -32,14 +35,13 @@ class tshark():
 	def continuousReading(self):
 		#we are creating pool of threads for each node
 		threadPool = []
-		for i in range(self.numbNodes):
-			for j in range(2):
-				if j == 0:
-					nodeName = "5node" + str(i + 1)
-				elif j == 1:
-					nodeName = "24node" + str(i + 1)
-				thread = threading.Thread(target = self.runningCommand, args = (nodeName, i))
-				threadPool.append(thread)
+		for i in range(self.numbNodes * 2):
+			if i%2 == 0:
+				nodeName = "24node" + str(math.floor(i / 2) + 1)
+			elif i%2 == 1:
+				nodeName = "5node" + str(math.floor(i / 2) + 1)
+			thread = threading.Thread(target = self.runningCommand, args = (nodeName, i))
+			threadPool.append(thread)
 				
 		for i in range(len(threadPool)):
 			threadPool[i].start()
@@ -154,7 +156,7 @@ class tshark():
 
 if __name__ == '__main__':
 #	print("aaa")
-	if len(sys.argv) == 2:
+	if len(sys(argv)) == 2:
 		tshObj = tshark()
 		tshObj.continuousReading()
 	else:
