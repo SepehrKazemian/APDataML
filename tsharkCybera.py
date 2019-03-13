@@ -33,11 +33,15 @@ class tshark():
 		#we are creating pool of threads for each node
 		threadPool = []
 		for i in range(self.numbNodes):
-			nodeName = "node" + str(i + 1)
-			thread = threading.Thread(target = self.runningCommand, args = (nodeName, i))
-			threadPool.append(thread)
-		
-		for i in range(self.numbNodes):
+			for j in range(2):
+				if j == 0:
+					nodeName = "5node" + str(i + 1)
+				elif j == 1:
+					nodeName = "24node" + str(i + 1)
+				thread = threading.Thread(target = self.runningCommand, args = (nodeName, i))
+				threadPool.append(thread)
+				
+		for i in range(len(threadPool)):
 			threadPool[i].start()
 		
 

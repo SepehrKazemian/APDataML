@@ -31,6 +31,7 @@ class captureAndSend():
 
 		#***********************STARTING THREADS***********************************
 		chipset1 = "wlan0"
+		name1 = "24node"
 		print(chipset1)
 		now = datetime.datetime.now()
 		# with open("log.txt", "a") as log:
@@ -38,12 +39,14 @@ class captureAndSend():
 #		file.write(chipset)
 		if self.numChipsets == 2: #in this case wlan0 is for 5ghz
 			chipset2 = "wlan1"
+			name1 = "5node"
+			name2 = "24node"
 			
 			thread1Chip1 = threading.Thread(target = self.hopping5GHz, args = (chipset1,))
-			thread2Chip1 = threading.Thread(target = self.capturing, args = (chipset1,))
+			thread2Chip1 = threading.Thread(target = self.capturing, args = (chipset1, name1))
 			
 			thread1Chip2 = threading.Thread(target = self.hopping24GHz, args = (chipset2,))
-			thread2Chip2 = threading.Thread(target = self.capturing, args = (chipset2,))			
+			thread2Chip2 = threading.Thread(target = self.capturing, args = (chipset2, name2))			
 			
 		
 			thread1Chip1.start()
@@ -53,15 +56,15 @@ class captureAndSend():
 
 		elif self.numChipsets == 1:			
 			thread1Chip1 = threading.Thread(target = self.hopping24GHz, args = (chipset1,))
-			thread2Chip1 = threading.Thread(target = self.capturing, args = (chipset1,))		
+			thread2Chip1 = threading.Thread(target = self.capturing, args = (chipset1, name1))		
 		
 			thread1Chip1.start()
 			thread2Chip1.start()		
 
 
-	def capturing(self, chipset):
-		loggerName = str(chipset) + "Logger.log"
-		logging.basicConfig(loggerName, format='%(levelname)s:%(message)s', level=logging.DEBUG)
+	def capturing(self, chipset, name):
+		loggerName = str(name) + "Logger.log"
+		logging.basicConfig(filename = loggerName, format='%(levelname)s:%(message)s', level=logging.DEBUG)
 		progStart = 0
 		iterations = 0		
 		captureNo = 0
@@ -102,14 +105,14 @@ class captureAndSend():
 					captureNo = int(cont)
 
 
-				name = "node.txt"
+				#name = "node.txt"
 
 
-				fileName = "node" + self.nodeNo + "." + str(captureNo)
+				fileName = str(name) + self.nodeNo + "." + str(captureNo)
 				
 				logging.info("capture number is: "+ str(captureNo) +" and file Name is: " + str(fileName) + "\n")
 		
-				self.proc = Popen(["tcpdump", "-i", chipset, "-en", "-vvs", "0", "link[0]==0x80", "-w", "node"+self.nodeNo+"."+str(captureNo)])
+				self.proc = Popen(["tcpdump", "-i", chipset, "-en", "-vvs", "0", "link[0]==0x80", "-w", str(name) + self.nodeNo + "." + str(captureNo)])
 				now = datetime.datetime.now()
 				logging.info(str(now.strftime("%Y-%m-%d %H:%M"))+ " the process id is: " + str(self.proc.pid) + "\n")
 				start += 1
@@ -207,7 +210,7 @@ class captureAndSend():
 			proc = Popen("iwconfig " + chipset + " channel " + str(arrOfChannels[i]), stdout = PIPE, shell = True)
 			time.sleep(1)
 			i += 1
-			if i = len(arrOfChannels):
+			if i == len(arrOfChannels):
 				i = 0
 
 
