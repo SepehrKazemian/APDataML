@@ -26,7 +26,7 @@ class tshark():
 				else:
 					self.nodeCounter[i] = str(0)
 			else:
-				os.system("touch node1.txt")
+				os.system("touch" + str(nodeCounterName))
 				self.nodeCounter[i - 1] = str(0)	
 			
 			
