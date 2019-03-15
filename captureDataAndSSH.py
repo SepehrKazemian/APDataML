@@ -129,7 +129,7 @@ class captureAndSend():
 					size = os.stat(fileName).st_size
 					logging.info(str(now.strftime("%Y-%m-%d %H:%M")) + " size of the file is: " + str(size) + " for the file " + fileName + "\n")
 				
-					if size > 1000000:
+					if size > 100000000:
 						now = datetime.datetime.now()
 						logging.info(str(now.strftime("%Y-%m-%d %H:%M"))+ "the size is big enough for saving \n")
 #						self.file.write("the size is getting big enough to transfer")
