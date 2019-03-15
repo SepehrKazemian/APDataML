@@ -19,7 +19,7 @@ class captureAndSend():
 		self.sshName = str(sys.argv[2])
 
 		#************************ADDRESS TO SEND THE FILES IN CYBERA*******************
-		self.cybDirect = "/mnt/250"
+		self.cybDirect = "/mnt/250/new"
 		self.cyberaDirectory = "ubuntu@199.116.235.145:" + str(self.cybDirect)
 		self.secondChar = None
 		self.notUp = []
@@ -112,7 +112,7 @@ class captureAndSend():
 				
 				logging.info("capture number is: "+ str(captureNo) +" and file Name is: " + str(fileName) + "\n")
 		
-				self.proc = Popen(["tcpdump", "-i", chipset, "-en", "-vvs", "0", "link[0]==0x80", "-w", str(name) + self.nodeNo + "." + str(captureNo)])
+				self.proc = Popen(["tcpdump", "-i", chipset, "-en", "-vvs", "0", "link[0]!=0x80", "-w", str(name) + self.nodeNo + "." + str(captureNo)])
 				now = datetime.datetime.now()
 				logging.info(str(now.strftime("%Y-%m-%d %H:%M"))+ " the process id is: " + str(self.proc.pid) + "\n")
 				start += 1

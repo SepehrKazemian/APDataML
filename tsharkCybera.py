@@ -5,11 +5,12 @@ import subprocess
 from subprocess import Popen, PIPE
 import os, sys
 import gzip
+import math
 
 class tshark():
 	def __init__(self):
 		self.totalLength = 0
-		self.numbNodes = (sys.arv[1])
+		self.numbNodes = int(sys.argv[1])
 		self.nodeCounter = [0 for i in range(2 * self.numbNodes)]
 		
 		#based on number of nodes that we have, we create or check the previous values of read data
@@ -156,7 +157,7 @@ class tshark():
 
 if __name__ == '__main__':
 #	print("aaa")
-	if len(sys(argv)) == 2:
+	if len(sys.argv) == 2:
 		tshObj = tshark()
 		tshObj.continuousReading()
 	else:
