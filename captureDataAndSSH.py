@@ -66,7 +66,7 @@ class captureAndSend():
 	def capturing(self, chipset, name):
 		proc = ""
 		loggerName = str(name) + "Logger.log"
-		logging.basicConfig(filename = loggerName, format='%(levelname)s:%(message)s', level=logging.DEBUG)
+		logging.basicConfig(filename = loggerName, format='%(threadName)s:%(message)s', level=logging.DEBUG)
 		print(loggerName)
 		progStart = 0
 		iterations = 0		
@@ -92,7 +92,7 @@ class captureAndSend():
 				if progStart == 0:
 					
 					progStart = 1
-					counterName = str(name) + "txt"
+					counterName = str(name) + ".txt"
 					if os.path.isfile(counterName) == True:
 						logging.info("we have the " + str(counterName) + "\n")
 						if (os.stat(counterName).st_size == 0) == False:
@@ -129,12 +129,15 @@ class captureAndSend():
 					size = os.stat(fileName).st_size
 					logging.info(str(now.strftime("%Y-%m-%d %H:%M")) + " size of the file is: " + str(size) + " for the file " + fileName + "\n")
 				
-					if size > 100000:
+					if size > 1000000:
 						now = datetime.datetime.now()
 						logging.info(str(now.strftime("%Y-%m-%d %H:%M"))+ "the size is big enough for saving \n")
 #						self.file.write("the size is getting big enough to transfer")
 						start = 0
 						captureNo += 1
+						with open(counterName, "a") as log:
+							log.write(str(captureNo))						
+						
 						os.system("kill -9 " + str(proc.pid))
 						
 
