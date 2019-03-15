@@ -141,7 +141,7 @@ class tshark():
 #		print(macAdd)
 #		print(channel)
 #		print(cu)
-		if len(macAdd) == 12:
+		if len(macAdd) == 12 and cu != "":
 			directory = "node" + str(arrIndex+1)  + "/" + str(macAdd[0:12]) + ".txt"
 			with open(directory, "a") as file:
 				file.write(time + " " + channel + " " + cu + " " + sig + "\n")
