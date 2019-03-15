@@ -135,7 +135,7 @@ class captureAndSend():
 #						self.file.write("the size is getting big enough to transfer")
 						start = 0
 						captureNo += 1
-						with open(counterName, "a") as log:
+						with open(counterName, "w") as log:
 							log.write(str(captureNo))						
 						
 						os.system("kill -9 " + str(proc.pid))
