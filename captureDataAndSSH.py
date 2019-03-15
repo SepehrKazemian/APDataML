@@ -94,18 +94,18 @@ class captureAndSend():
 					progStart = 1
 					counterName = str(name) + "txt"
 					if os.path.isfile(counterName) == True:
-						logging.info("we have the node.txt\n")
+						logging.info("we have the " + str(counterName) + "\n")
 						if (os.stat(counterName).st_size == 0) == False:
-							logging.info("node.txt is not empty\n")
+							logging.info(str(counterName) + " is not empty\n")
 							with open(counterName, "r") as txt:
 								cont = txt.readline()
-								logging.info("node.txt value is: " + str(int(cont)) + "\n")
+								logging.info(str(counterName) + " value is: " + str(int(cont)) + "\n")
 						else:
 							cont = 0
-							logging.info("node.txt is empty so value is: " + str(int(cont)) + "\n")
+							logging.info(str(counterName) + " is empty so value is: " + str(int(cont)) + "\n")
 					else:
 						logging.info("we dont have the file so make it \n")
-						os.system("touch node.txt")
+						os.system("touch " + str(counterName))
 						cont = 0
 						
 					captureNo = int(cont)
@@ -145,8 +145,7 @@ class captureAndSend():
 							
 				except FileNotFoundError:
 					now = datetime.datetime.now()
-					with open("log.txt", "a") as log:                                                              
-						log.write(str(now.strftime("%Y-%m-%d %H:%M"))+ "No file \n")
+					logging.info(str(now.strftime("%Y-%m-%d %H:%M"))+ "No file \n")
 	#				self.file.write("File is not still created")
 					print("continueing")
 				time.sleep(10)
