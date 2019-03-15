@@ -10,7 +10,7 @@ import logging
 class captureAndSend():
 	
 	def __init__(self):
-		self.proc = ""
+		#self.proc = ""
 		#***************ENTER THE NODE NUMBER*************
 		self.nodeNo = str(sys.argv[1])
 		self.nodeNumber = self.nodeNo
@@ -43,6 +43,7 @@ class captureAndSend():
 			name2 = "24node"
 			
 			thread1Chip1 = threading.Thread(target = self.hopping5GHz, args = (chipset1,))
+			
 			thread2Chip1 = threading.Thread(target = self.capturing, args = (chipset1, name1))
 			
 			thread1Chip2 = threading.Thread(target = self.hopping24GHz, args = (chipset2,))
@@ -63,8 +64,10 @@ class captureAndSend():
 
 
 	def capturing(self, chipset, name):
+		proc = ""
 		loggerName = str(name) + "Logger.log"
 		logging.basicConfig(filename = loggerName, format='%(levelname)s:%(message)s', level=logging.DEBUG)
+		print(loggerName)
 		progStart = 0
 		iterations = 0		
 		captureNo = 0
@@ -76,7 +79,9 @@ class captureAndSend():
 			iterations += 1
 			#************************LOGGING******************************
 			if iterations%30 == 0:
+				logging.info(str(loggerName))
 				now = datetime.datetime.now()
+				logging.info(str(threading.currenThread().getName()))
 				logging.info(str(now.strftime("%Y-%m-%d %H:%M")) + " number of iterations are: " + str(iterations) + "\n")
 
 			#************************RUN THE CAPTURING FOR THE FIRST TIME***********************************
@@ -112,9 +117,9 @@ class captureAndSend():
 				
 				logging.info("capture number is: "+ str(captureNo) +" and file Name is: " + str(fileName) + "\n")
 		
-				self.proc = Popen(["tcpdump", "-i", chipset, "-en", "-vvs", "0", "link[0]!=0x80", "-w", str(name) + self.nodeNo + "." + str(captureNo)])
+				proc = Popen(["tcpdump", "-i", chipset, "-en", "-vvs", "0", "link[0]!=0x80", "-w", str(name) + self.nodeNo + "." + str(captureNo)])
 				now = datetime.datetime.now()
-				logging.info(str(now.strftime("%Y-%m-%d %H:%M"))+ " the process id is: " + str(self.proc.pid) + "\n")
+				logging.info(str(now.strftime("%Y-%m-%d %H:%M"))+ " the process id is: " + str(proc.pid) + "\n")
 				start += 1
 
 			#**********************CHECK THE SIZE OF THE FILE*******************************
@@ -123,13 +128,13 @@ class captureAndSend():
 					size = os.stat(fileName).st_size
 					logging.info(str(now.strftime("%Y-%m-%d %H:%M")) + " size of the file is: " + str(size) + " for the file " + fileName + "\n")
 				
-					if size > 100000000:
+					if size > 100000:
 						now = datetime.datetime.now()
 						logging.info(str(now.strftime("%Y-%m-%d %H:%M"))+ "the size is big enough for saving \n")
 #						self.file.write("the size is getting big enough to transfer")
 						start = 0
 						captureNo += 1
-						os.system("kill -9 " + str(self.proc.pid))
+						os.system("kill -9 " + str(proc.pid))
 						
 
 						thread3 = threading.Thread(target = self.sendingFunc, args = (fileName,))
