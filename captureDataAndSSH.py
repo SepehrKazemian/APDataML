@@ -92,11 +92,12 @@ class captureAndSend():
 				if progStart == 0:
 					
 					progStart = 1
-					if os.path.isfile("node.txt") == True:
+					counterName = str(name) + "txt"
+					if os.path.isfile(counterName) == True:
 						logging.info("we have the node.txt\n")
-						if (os.stat("node.txt").st_size == 0) == False:
+						if (os.stat(counterName).st_size == 0) == False:
 							logging.info("node.txt is not empty\n")
-							with open("node.txt", "r") as txt:
+							with open(counterName, "r") as txt:
 								cont = txt.readline()
 								logging.info("node.txt value is: " + str(int(cont)) + "\n")
 						else:
