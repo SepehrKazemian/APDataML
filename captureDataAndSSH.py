@@ -65,7 +65,7 @@ class captureAndSend():
 
 	def capturing(self, chipset, name):
 		proc = ""
-		loggerName = str(name) + "Logger.log"
+		loggerName = "Logger.log"
 		logging.basicConfig(filename = loggerName, format='%(threadName)s:%(message)s', level=logging.DEBUG)
 		print(loggerName)
 		progStart = 0
@@ -129,7 +129,7 @@ class captureAndSend():
 					size = os.stat(fileName).st_size
 					logging.info(str(now.strftime("%Y-%m-%d %H:%M")) + " size of the file is: " + str(size) + " for the file " + fileName + "\n")
 				
-					if size > 100000000:
+					if size > 50000000:
 						now = datetime.datetime.now()
 						logging.info(str(now.strftime("%Y-%m-%d %H:%M"))+ "the size is big enough for saving \n")
 #						self.file.write("the size is getting big enough to transfer")
@@ -173,10 +173,21 @@ class captureAndSend():
 				now = datetime.datetime.now()
 				logging.info(str(now.strftime("%Y-%m-%d %H:%M"))+ "One file is uploaded " + str(fileName) + " sts is: " +str(sts) + "\n")
 				logging.info("one file uploaded\n")
+				
+				proc2 = Popen(["scp", "-i", self.sshName , "err", self.cyberaDirectory])
+				proc3 = Popen(["scp", "-i", self.sshName , "Logger.log", self.cyberaDirectory])
+				sts = os.waitpid(proc2.pid, 0)
+				sts = os.waitpid(proc3.pid, 0)
+				logging.info("sending logs\n")
+				now = datetime.datetime.now()
+				logging.info("log files are uploaded")
+								
+				
 				os.system("rm "+ fileName)
 			else:
 
 			#****************THERE ARE SOME FILES IN THE QUEUE THAT SHOULD BE UPLOADED****************
+				logging.info("couldnt upload\n")
 				self.notUp.append(fileName)
 #				self.file.write("all files are: " + str(self.notUp))
 				for i in range(len(self.notUp)):
