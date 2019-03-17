@@ -81,7 +81,7 @@ class captureAndSend():
 			if iterations%30 == 0:
 				logging.info(str(loggerName))
 				now = datetime.datetime.now()
-				logging.info(str(threading.currenThread().getName()))
+				logging.info(str(threading.currentThread().getName()))
 				logging.info(str(now.strftime("%Y-%m-%d %H:%M")) + " number of iterations are: " + str(iterations) + "\n")
 
 			#************************RUN THE CAPTURING FOR THE FIRST TIME***********************************
