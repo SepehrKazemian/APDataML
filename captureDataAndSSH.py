@@ -114,11 +114,11 @@ class captureAndSend():
 				#name = "node.txt"
 
 
-				fileName = str(name) + self.nodeNo + "." + str(captureNo)
+				fileName = "/data" + str(name) + self.nodeNo + "." + str(captureNo)
 				
 				logging.info("capture number is: "+ str(captureNo) +" and file Name is: " + str(fileName) + "\n")
 		
-				proc = Popen(["tcpdump", "-i", chipset, "-en", "-vvs", "0", "link[0]!=0x80", "-w", str(name) + self.nodeNo + "." + str(captureNo)])
+				proc = Popen(["tcpdump", "-i", chipset, "-en", "-vvs", "0", "link[0]!=0x80", "-w", str(fileName)])
 				now = datetime.datetime.now()
 				logging.info(str(now.strftime("%Y-%m-%d %H:%M"))+ " the process id is: " + str(proc.pid) + "\n")
 				start += 1
@@ -187,7 +187,7 @@ class captureAndSend():
 			else:
 
 			#****************THERE ARE SOME FILES IN THE QUEUE THAT SHOULD BE UPLOADED****************
-				logging.info("couldnt upload\n")
+				logging.info("uploading chunks\n")
 				self.notUp.append(fileName)
 #				self.file.write("all files are: " + str(self.notUp))
 				for i in range(len(self.notUp)):
