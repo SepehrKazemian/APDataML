@@ -114,7 +114,7 @@ class captureAndSend():
 				#name = "node.txt"
 
 
-				fileName = "/data/" + str(name) + self.nodeNo + "." + str(captureNo)
+				fileName = str(name) + self.nodeNo + "." + str(captureNo)
 				
 				logging.info("capture number is: "+ str(captureNo) +" and file Name is: " + str(fileName) + "\n")
 		
