@@ -39,8 +39,8 @@ class captureAndSend():
 #		file.write(chipset)
 		if self.numChipsets == 2: #in this case wlan0 is for 5ghz
 			chipset2 = "wlan1"
-			name1 = "5node"
-			name2 = "24node"
+			name1 = "/data/5node"
+			name2 = "/data/24node"
 			
 			thread1Chip1 = threading.Thread(target = self.hopping5GHz, args = (chipset1,))
 			
@@ -65,7 +65,7 @@ class captureAndSend():
 
 	def capturing(self, chipset, name):
 		proc = ""
-		loggerName = "Logger.log"
+		loggerName = "/data/Logger.log"
 		logging.basicConfig(filename = loggerName, format='%(threadName)s:%(message)s', level=logging.DEBUG)
 		print(loggerName)
 		progStart = 0
@@ -114,7 +114,7 @@ class captureAndSend():
 				#name = "node.txt"
 
 
-				fileName = "/data" + str(name) + self.nodeNo + "." + str(captureNo)
+				fileName = "/data/" + str(name) + self.nodeNo + "." + str(captureNo)
 				
 				logging.info("capture number is: "+ str(captureNo) +" and file Name is: " + str(fileName) + "\n")
 		
@@ -166,7 +166,7 @@ class captureAndSend():
 
 			if len(self.notUp) == 0:
 			#*****************NO FILE IS IN THE QUEUE TO UPLOAD*****************
-				command = ("scp " + fileName + " -i " + self.sshName + " ubuntu@199.116.235.145:/home/ubuntu/data")
+				#command = ("scp " + fileName + " -i " + self.sshName + " ubuntu@199.116.235.145:/home/ubuntu/data")
 				proc1 = Popen(["scp", "-i", self.sshName , fileName, self.cyberaDirectory])
 				sts = os.waitpid(proc1.pid, 0)
 				logging.info("I am waiting\n")
@@ -183,7 +183,7 @@ class captureAndSend():
 				logging.info("log files are uploaded")
 								
 				
-				os.system("rm "+ fileName)
+				os.remove(fileName)
 			else:
 
 			#****************THERE ARE SOME FILES IN THE QUEUE THAT SHOULD BE UPLOADED****************
@@ -196,7 +196,7 @@ class captureAndSend():
 					now = datetime.datetime.now()
 					logging.info(str(now.strftime("%Y-%m-%d %H:%M"))+str(self.notUp[i]) + 'is done with sts of ' + str(sts) + '\n')
 					print(str(self.notUp[i]) + " is done")					
-					os.system("rm " + self.notUp[i])
+					os.remove(self.notUp[i])
 				self.notUp.clear()
 				now = datetime.datetime.now()
 				logging.info(str(now.strftime("%Y-%m-%d %H:%M"))+ "all files are uploaded\n")
