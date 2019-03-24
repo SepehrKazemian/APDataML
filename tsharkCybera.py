@@ -81,8 +81,8 @@ class tshark():
 				
 				#uploading files into gdrive as backup/ up to 4 device is supported in this code
 				
-				if arrIndex == 0:
-					os.system("/home/ubuntu/gdrive-linux-x64 upload --parent 1IEkfqmb0F0qqWwjlwbPf5CIsveKTA08L " + gzName )
+				if arrIndex == 0:				
+					os.system("/home/ubuntu/gdrive-linux-x64 upload --parent 1lGVbsa4PTnxbdpWgxPWqPfD9tDH9JeNt " + gzName )
 					print(gzName + " is uploaded")
 
 				elif arrIndex == 1:

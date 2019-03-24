@@ -174,13 +174,13 @@ class captureAndSend():
 				logging.info(str(now.strftime("%Y-%m-%d %H:%M"))+ "One file is uploaded " + str(fileName) + " sts is: " +str(sts) + "\n")
 				logging.info("one file uploaded\n")
 				
-				proc2 = Popen(["scp", "-i", self.sshName , "/data/err", self.cyberaDirectory])
-				proc3 = Popen(["scp", "-i", self.sshName , "/data/Logger.log", self.cyberaDirectory])
-				sts = os.waitpid(proc2.pid, 0)
-				sts = os.waitpid(proc3.pid, 0)
-				logging.info("sending logs\n")
-				now = datetime.datetime.now()
-				logging.info("log files are uploaded")
+				# proc2 = Popen(["scp", "-i", self.sshName , "/data/err", self.cyberaDirectory])
+				# proc3 = Popen(["scp", "-i", self.sshName , "/data/Logger.log", self.cyberaDirectory])
+				# sts = os.waitpid(proc2.pid, 0)
+				# sts = os.waitpid(proc3.pid, 0)
+				# logging.info("sending logs\n")
+				# now = datetime.datetime.now()
+				# logging.info("log files are uploaded")
 								
 				
 				os.remove(fileName)
