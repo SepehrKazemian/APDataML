@@ -146,7 +146,7 @@ class tshark():
 			with open(directory, "a") as file:
 				file.write(time + " " + channel + " " + cu + " " + sig + "\n")
 			
-			chanDirectory = "channel/" + "channel" + str(channel) + ".txt"
+			chanDirectory = "channel" + "Node" + str(arrIndex+1) +"/" + "channel" + str(channel) + ".txt"
 			with open(chanDirectory, "a") as file:
 				file.write(time + " " + channel + " " + cu + " " + sig + "\n")			
 		
