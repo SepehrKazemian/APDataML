@@ -41,16 +41,17 @@ class tshark():
 				nodeName = "24node" + str(math.floor(i / 2) + 1)
 			elif i%2 == 1:
 				nodeName = "5node" + str(math.floor(i / 2) + 1)
-			thread = threading.Thread(target = self.runningCommand, args = (nodeName, i))
+			nodeNumber = math.floor(i / 2) + 1
+			thread = threading.Thread(target = self.runningCommand, args = (nodeName, i, nodeNumber))
 			threadPool.append(thread)
 				
 		for i in range(len(threadPool)):
 			threadPool[i].start()
 		
 
-	def runningCommand(self, nodeName, arrIndex):
+	def runningCommand(self, nodeName, arrIndex, nodeNumber):		
 		fileName = nodeName + "." + str(self.nodeCounter[arrIndex])
-		print(fileName)	
+		#print(fileName)	
 		nodeText = str(nodeName) + ".txt"
 		while True:
 			fileName = nodeName + "." + str(self.nodeCounter[arrIndex])
@@ -70,7 +71,7 @@ class tshark():
 					#for every incoming line we should block and then read it
 					line = proc.stdout.readline()
 					#sending line for analyzing
-					self.analyze(line.decode('ascii'), arrIndex)
+					self.analyze(line.decode('ascii'), nodeNumber)
 			
 				with open(fileName, 'rb') as inFile:
 					content = inFile.read()
@@ -81,19 +82,19 @@ class tshark():
 				
 				#uploading files into gdrive as backup/ up to 4 device is supported in this code
 				
-				if arrIndex == 0:				
+				if nodeNumber == 0:				
 					os.system("/home/ubuntu/gdrive-linux-x64 upload --parent 1lGVbsa4PTnxbdpWgxPWqPfD9tDH9JeNt " + gzName )
 					print(gzName + " is uploaded")
 
-				elif arrIndex == 1:
+				elif nodeNumber == 1:
 					os.system("/home/ubuntu/gdrive-linux-x64 upload --parent 1QU48uxFL7l6LSiFYC9YNP420D6dl676r " + gzName )
 					print(gzName + " is uploaded")
 					
-				elif arrIndex == 2:
+				elif nodeNumber == 2:
 					os.system("/home/ubuntu/gdrive-linux-x64 upload --parent 1XjaSLNSbjop_4nAzIpF0aZx_bP3cAL4f " + gzName )
 					print(gzName + " is uploaded")
 
-				elif arrIndex == 3:
+				elif nodeNumber == 3:
 					os.system("/home/ubuntu/gdrive-linux-x64 upload --parent 1tMaRCP6HzARxU8mgDmkai90U3_hlD4ip " + gzName )
 					print(gzName + " is uploaded")
 
@@ -109,7 +110,7 @@ class tshark():
 
 
 			
-	def analyze(self, line, arrIndex):
+	def analyze(self, line, nodeNumber):
 		counter = 0
 		macAdd = ''
 		channel = ''
@@ -142,11 +143,11 @@ class tshark():
 #		print(channel)
 #		print(cu)
 		if len(macAdd) == 12 and cu != "":
-			directory = "node" + str(arrIndex+1)  + "/" + str(macAdd[0:12]) + ".txt"
+			directory = "node" + str(nodeNumber)  + "/" + str(macAdd[0:12]) + ".txt"
 			with open(directory, "a") as file:
 				file.write(time + " " + channel + " " + cu + " " + sig + "\n")
 			
-			chanDirectory = "channel" + "Node" + str(arrIndex+1) +"/" + "channel" + str(channel) + ".txt"
+			chanDirectory = "channel" + "Node" + str(nodeNumber) +"/" + "channel" + str(channel) + ".txt"
 			with open(chanDirectory, "a") as file:
 				file.write(time + " " + channel + " " + cu + " " + sig + "\n")			
 		
