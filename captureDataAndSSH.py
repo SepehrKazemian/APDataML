@@ -30,8 +30,8 @@ class captureAndSend():
 	def threads(self):
 
 		#***********************STARTING THREADS***********************************
-		chipset1 = "wlan0"
-		name1 = "24node"
+		chipset1 = "wlan1"
+		name1 = "/data/24node"
 		print(chipset1)
 		now = datetime.datetime.now()
 		# with open("log.txt", "a") as log:
@@ -39,6 +39,7 @@ class captureAndSend():
 #		file.write(chipset)
 		if self.numChipsets == 2: #in this case wlan0 is for 5ghz
 			chipset2 = "wlan1"
+			chipset1 = "wlan0"
 			name1 = "/data/5node"
 			name2 = "/data/24node"
 			
@@ -118,7 +119,7 @@ class captureAndSend():
 				
 				logging.info("capture number is: "+ str(captureNo) +" and file Name is: " + str(fileName) + "\n")
 		
-				proc = Popen(["tcpdump", "-i", chipset, "-en", "-vvs", "0", "link[0]!=0x80", "-w", str(fileName)])
+				proc = Popen(["tcpdump", "-i", chipset, "-en", "-vvs", "0", "link[0]==0x80", "-w", str(fileName)])
 				now = datetime.datetime.now()
 				logging.info(str(now.strftime("%Y-%m-%d %H:%M"))+ " the process id is: " + str(proc.pid) + "\n")
 				start += 1
@@ -214,7 +215,7 @@ class captureAndSend():
 		i = 1
 		while True:
 			proc = Popen("iwconfig " + chipset + " channel " + str(i), stdout = PIPE, shell = True)
-			time.sleep(1)
+			time.sleep(2)
 			if i == 1:
 				i = 6
 			elif i == 6:
@@ -223,11 +224,11 @@ class captureAndSend():
 				i = 1
 				
 	def hopping5GHz(self, chipset):
-		arrOfChannels = [36, 40, 44, 48, 52, 56, 60, 64, 100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140, 144, 149, 153, 157, 161, 165]
+		arrOfChannels = [36, 40, 44, 48, 52, 56, 64, 100, 104, 108, 112, 116, 132, 136, 149, 153, 161, 165]
 		i = 0
 		while True:
 			proc = Popen("iwconfig " + chipset + " channel " + str(arrOfChannels[i]), stdout = PIPE, shell = True)
-			time.sleep(1)
+			time.sleep(2)
 			i += 1
 			if i == len(arrOfChannels):
 				i = 0
