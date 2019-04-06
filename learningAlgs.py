@@ -243,8 +243,8 @@ class learningAlgs:
 			
 
 	#checking the whether we processed the raw data previously or not
-	def csvChecker(self, fileName, model):
-		pathFile = "node1/CSV/" + fileName + ".csv"
+	def csvChecker(self, fileName, model, nodeNumber):
+		pathFile = "node" + nodeNumber + "/CSV/" + fileName + ".csv"
 		print(str(fileName) + " is in csvChecker\n")
 		if os.path.isfile(pathFile) == True:
 			print("we have the csv file: pulling out data\n")

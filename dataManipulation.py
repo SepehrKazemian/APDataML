@@ -34,7 +34,7 @@ from sklearn.cluster import KMeans
 import logging
 
 
-def dataSplitting(fileName, channelBasedBool, classifier):
+def dataSplitting(fileName, channelBasedBool, classifier, timeInterval, nodeNumber):
 	logging.basicConfig(filename='example.log',level=logging.DEBUG)
 	print("salam")
 	#print(fileName + " in datasplitting func")
@@ -43,6 +43,7 @@ def dataSplitting(fileName, channelBasedBool, classifier):
 	secondCounter = 0
 	prevTime = ""
 	curTime = ""
+	currTimeStamp = ""
 	cu = ""
 	lineCounter = 0
 	signalVal = 0
@@ -50,7 +51,7 @@ def dataSplitting(fileName, channelBasedBool, classifier):
 	preMaxVal = 0
 	channelCheck = 0
 	maxVal = 0
-	fileRead = "node1/extractedData/" + str(fileName)
+	fileRead = "node" + str(nodeNumber) +"/extractedData/" + str(fileName)
 	fileWrite = str(fileName)
 		
 	#print("here")
@@ -89,6 +90,14 @@ def dataSplitting(fileName, channelBasedBool, classifier):
 				month = "08"
 			elif line[0:3] == "Jan":
 				month = "01"
+			elif line[0:3] == "Feb":
+				month = "02"
+			elif line[0:3] == "Mar":
+				month = "03"
+			elif line[0:3] == "Apr":
+				month = "04"
+			elif line[0:3] == "May":
+				month = "05"				
 			else:
 				print("problem in month")
 				
@@ -123,18 +132,24 @@ def dataSplitting(fileName, channelBasedBool, classifier):
 				channelCheck = channel
 			
 			#channel changes the string positions
-			if channel == "1" or channel == "6":
+			if len(channel) == 1:
 				for i in range(38,41):
 					if line[i] != " ":
 						cu += line[i]
 					else:
 						break
-			elif channel == "11":
+			elif len(channel) == 2:
 				for i in range(39,42):
 					if line[i] != " ":
 						cu += line[i]
 					else:
-						break						
+						break
+			elif len(channel) == 3:
+				for i in range(40,43):
+					if line[i] != " ":
+						cu += line[i]
+					else:
+						break				
 			
 			signalReverse = ""
 			signal = ""
@@ -165,7 +180,7 @@ def dataSplitting(fileName, channelBasedBool, classifier):
 					maxVal = int(cu)
 					counter = 1
 				
-				elif currTimeStamp - prevTime >= 5:
+				elif currTimeStamp - prevTime >= timeInterval:
 					
 					# logging.info("second time")
 					# logging.info(str(currTimeStamp))
@@ -173,7 +188,7 @@ def dataSplitting(fileName, channelBasedBool, classifier):
 					# logging.info(str(int(cu)))
 					# logging.info(str(maxVal))
 					
-					while int((currTimeStamp - prevTime) / 5) > 0:
+					while int((currTimeStamp - prevTime) / timeInterval) > 0:
 						currTimeStampUTC = datetime.datetime.fromtimestamp(prevTime).strftime('%Y-%m-%d %H:%M:%S')
 						currTimeStampUTC = datetime.datetime.strptime(currTimeStampUTC, '%Y-%m-%d %H:%M:%S')
 						central = offset + currTimeStampUTC
@@ -196,14 +211,14 @@ def dataSplitting(fileName, channelBasedBool, classifier):
 						# logging.info(str(int(cu)))
 						# logging.info(str(maxVal))
 
-						prevTime = prevTime + 5
+						prevTime = prevTime + timeInterval
 					
 
 					
 					maxVal = 0
 					
 				
-				elif currTimeStamp - prevTime < 5:
+				elif currTimeStamp - prevTime < timeInterval:
 					# logging.info("forth time")
 					# logging.info(str(currTimeStamp))
 					# logging.info(str(prevTime))
@@ -217,7 +232,7 @@ def dataSplitting(fileName, channelBasedBool, classifier):
 				print("channel utilization error")
 	
 
-	pandasWriting(csvArrTime, csvArrCU, fileWrite)
+	pandasWriting(csvArrTime, csvArrCU, fileWrite, nodeNumber)
 	
 	if classifier == "k":
 		chanUtil = clusteringKMeans(csvArrCU)
@@ -226,9 +241,9 @@ def dataSplitting(fileName, channelBasedBool, classifier):
 	return chanUtil, timeArr
 	
 	
-def pandasWriting(csvArrTime, csvArrCU, fileWrite):
+def pandasWriting(csvArrTime, csvArrCU, fileWrite, nodeNumber):
 	dataFile = pandas.DataFrame(data = {"time": csvArrTime, "CU": csvArrCU})
-	with open(str("node1/CSV/" + str(fileWrite) + ".csv"), 'a') as file:
+	with open(str("node" + nodeNumber + "/CSV/" + str(fileWrite) + ".csv"), 'a') as file:
 		dataFile.to_csv(file, sep = ",", header = False)
 	print("hereee")
 

@@ -98,6 +98,10 @@ class tshark():
 					os.system("/home/ubuntu/gdrive-linux-x64 upload --parent 1tMaRCP6HzARxU8mgDmkai90U3_hlD4ip " + gzName )
 					print(gzName + " is uploaded")
 
+				elif nodeNumber == 4:
+					os.system("/home/ubuntu/gdrive-linux-x64 upload --parent 1VooxGMOqp4h1x-xLWDiBIf_WOBLF1Kyq " + gzName )
+					print(gzName + " is uploaded")					
+
 				os.system("rm " + fileName)
 				os.system("rm " + gzName)
 				self.nodeCounter[arrIndex] = str(int(self.nodeCounter[arrIndex]) + 1)

@@ -41,6 +41,7 @@ class plottData:
 		channelBasedFileExist = 0
 		channelPlotterBool = input("Plotting frequency based [2], channel based [1], or AP based [0]? (default is 0) ")
 		plotterBool = int(input("do you want to plot the data? Yes[1], No[0]"))
+		timeInterval = int(input("what is the interval of data in the dataset? "))
 		#fileName = ""
 		
 		print(channelPlotterBool)
@@ -56,14 +57,14 @@ class plottData:
 		strName = ""
 		
 		
-		# for i in range(len(str(fileNames))):
-			# if str(fileNames[i]) != "\n":
-				# strName += str(fileNames[i])
-			# else:
-				# fileNameArr.append(strName)
-				# strName = ""
+		for i in range(len(str(fileNames))):
+			if str(fileNames[i]) != "\n":
+				strName += str(fileNames[i])
+			else:
+				fileNameArr.append(strName)
+				strName = ""
 				
-		fileNameArr = ['40017ad6b2e0-6', '500f801e28a0-6']
+		#fileNameArr = ['40017ad6b2e0-6', '500f801e28a0-6']
 				 
 		preHour = ''
 		counter = -1
@@ -107,21 +108,21 @@ class plottData:
 		if int(channelPlotterBool) == 0 or int(channelPlotterBool) == 2:
 			LA = classImportLA.learningAlgs()
 			for i in range(len(fileNameArr)):
-				pathFile = "node1/CSV/" + fileNameArr[i] + ".csv"
+				pathFile = "node" + str(nodeNumber) + "/CSV/" + fileNameArr[i] + ".csv"
 				if os.path.isfile(pathFile) == False:
-					self.processRawDataCaller(fileNameArr[i], nodeNumber, channelPlotterBool)
-				stat, chanUtil, timeArr = LA.csvChecker(fileNameArr[i], 0)
-				if int(channelPlotterBool) == 1:
+					self.processRawDataCaller(fileNameArr[i], nodeNumber, channelPlotterBool, timeInterval)
+				stat, chanUtil, timeArr = LA.csvChecker(fileNameArr[i], 0, nodeNumber)
+				if int(plotterBool) == 1:
 					self.plotting(fileNameArr[i], chanUtil, timeArr, nodeNumber, channelPlotterBool)
 				# else:
 					# return chanUtil, timeArr			
 		
 			
 
-	def processRawDataCaller(self, fileName, nodeNumber, channelPlotterBool):
+	def processRawDataCaller(self, fileName, nodeNumber, channelPlotterBool, timeInterval):
 		fileNameStr = "node" + str(nodeNumber) + "/extractedData/" + str(fileName)
 		#sending file for data extraction
-		dataMan.dataSplitting(fileName, channelPlotterBool, 0)
+		dataMan.dataSplitting(fileName, channelPlotterBool, 0, timeInterval, nodeNumber)
 		#now we have files for that
 		
 			
