@@ -82,24 +82,25 @@ class tshark():
 				
 				#uploading files into gdrive as backup/ up to 4 device is supported in this code
 				
-				if nodeNumber == 0:				
-					os.system("/home/ubuntu/gdrive-linux-x64 upload --parent 1lGVbsa4PTnxbdpWgxPWqPfD9tDH9JeNt " + gzName )
-					print(gzName + " is uploaded")
-
-				elif nodeNumber == 1:
+				print(str(nodeNumber) + " is the node number")
+				if nodeNumber == 1:				
 					os.system("/home/ubuntu/gdrive-linux-x64 upload --parent 1QU48uxFL7l6LSiFYC9YNP420D6dl676r " + gzName )
 					print(gzName + " is uploaded")
-					
+
 				elif nodeNumber == 2:
 					os.system("/home/ubuntu/gdrive-linux-x64 upload --parent 1XjaSLNSbjop_4nAzIpF0aZx_bP3cAL4f " + gzName )
 					print(gzName + " is uploaded")
-
+					
 				elif nodeNumber == 3:
 					os.system("/home/ubuntu/gdrive-linux-x64 upload --parent 1tMaRCP6HzARxU8mgDmkai90U3_hlD4ip " + gzName )
 					print(gzName + " is uploaded")
 
 				elif nodeNumber == 4:
 					os.system("/home/ubuntu/gdrive-linux-x64 upload --parent 1VooxGMOqp4h1x-xLWDiBIf_WOBLF1Kyq " + gzName )
+					print(gzName + " is uploaded")
+
+				elif nodeNumber == 5:
+					os.system("/home/ubuntu/gdrive-linux-x64 upload --parent 1m9R6X7G1Mvb7xAVypkn-Zo1JM-qNlc_x " + gzName )
 					print(gzName + " is uploaded")					
 
 				os.system("rm " + fileName)
@@ -155,8 +156,8 @@ class tshark():
 			with open(chanDirectory, "a") as file:
 				file.write(time + " " + channel + " " + cu + " " + sig + "\n")			
 		
-		else:
-			print("macAdd is: " + str(macAdd))
+		#else:
+			#print("macAdd is: " + str(macAdd))
 			
 			
 
