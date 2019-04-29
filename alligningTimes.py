@@ -28,11 +28,16 @@ from sklearn.metrics import f1_score
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
-from scipy import stats
-import pandas
 import warnings
 from sklearn.cluster import KMeans
 import logging
+import Plot as plot
+import pysal
+from scipy.spatial import distance
+from sklearn.metrics.pairwise import euclidean_distances
+from discreteMarkovChain import markovChain
+import learningAlgs as LA
+from scipy import signal
 
 class alligningTime:
 	def __init__(self):
@@ -40,6 +45,8 @@ class alligningTime:
 		self.set2 = set()
 
 	def alignTime(self, fileName, setName):
+		#print(fileName)
+		#print(setName)
 		stringTime = ""
 		now_timestamp = time.time()
 		secondCounter = 0
@@ -77,7 +84,7 @@ class alligningTime:
 				
 				#Month recognization from the file
 		#		print(line[13:21])
-				timer = line[13:21]
+				timer = line[13:23]
 
 				if line[0:3] == "Oct":
 					month = "10"
@@ -111,7 +118,7 @@ class alligningTime:
 				year = line[8:12]
 				stringTime = month + "/" + str(day) + "/" + str(year) + " " + str(timer)
 				try:
-					currTimeStamp = time.mktime(datetime.datetime.strptime(stringTime, "%m/%d/%Y %H:%M:%S").timetuple())
+					#currTimeStamp = time.mktime(datetime.datetime.strptime(stringTime, "%m/%d/%Y %H:%M:%S").timetuple())
 					setName.add(stringTime)
 				except ValueError:
 					print("d" + str(stringTime))			
@@ -156,7 +163,7 @@ class alligningTime:
 				
 				#Month recognization from the file
 		#		print(line[13:21])
-				timer = line[13:21]
+				timer = line[13:23]
 
 				if line[0:3] == "Oct":
 					month = "10"
@@ -193,28 +200,120 @@ class alligningTime:
 					with open(fileWrite, 'a') as file:
 						file.write(line)
 
-				
-							
+
+
+
+			
 				
 if __name__ == '__main__':
-	fileName1 = "500f801cf9c0-2.txt"
-	fileName2 = "500f801cf9c0-5.txt"
+
+	address = input("give the channel seperation folder files address: ")
+	
+	files = os.listdir(address)
+	for i in range(len(files)):
+		if ".txt" not in files[i]:
+			del files[i]
+	
+	
+	chan1Alligning = []
+	chan6Alligning = []
+	chan11Alligning = []
+	for i in range(len(files)):
+		if "CH11" in files[i]:
+			chan11Alligning.append(files[i])
+		
+		elif "CH1" in files[i]:
+			chan1Alligning.append(files[i])
+		
+		elif "CH6" in files[i]:
+			chan6Alligning.append(files[i])
+			
+
+
 	obj = alligningTime()
-	print(obj.set1)
-	print(obj.set2)
-	thread1 = threading.Thread(target = obj.alignTime, args = (fileName1, obj.set1))
-	thread2 = threading.Thread(target = obj.alignTime, args = (fileName2, obj.set2))	
-	thread1.start()
-	thread2.start()
-	thread1.join()
-	thread2.join()
-	unitedSet = (obj.set1 & obj.set2)
-	fileWrite1 = "Node2.txt"
-	fileWrite2 = "Node5.txt"
-	print("starting to write")
-	thread1 = threading.Thread(target = obj.writeTheAllignedFile, args = (fileName1, unitedSet, fileWrite1))
-	thread2 = threading.Thread(target = obj.writeTheAllignedFile, args = (fileName2, unitedSet, fileWrite2))	
-	thread1.start()
-	thread2.start()
-	thread1.join()
-	thread2.join()	
+	
+	allignedDirectory = address + "/alligned/"
+	if os.path.isdir(allignedDirectory) == False:
+		os.system("mkdir " + str(allignedDirectory))
+	
+	print(files)
+	print(chan1Alligning)
+	print(chan6Alligning)
+	print(chan11Alligning)
+	
+	#number of files for chan1, 6, 11 wont be the same as some of the AP might not worked on that specific channel when we were monitoring them
+	for i in range(len(chan1Alligning)):
+		for j in range(i + 1, len(chan1Alligning)):
+			obj.set1 = set()
+			obj.set2 = set()
+			fileName1 = address + "/" + chan1Alligning[i]
+			fileName2 = address + "/" + chan1Alligning[j]
+			thread1 = threading.Thread(target = obj.alignTime, args = (fileName1, obj.set1))
+			thread2 = threading.Thread(target = obj.alignTime, args = (fileName2, obj.set2))
+			thread1.start()
+			thread2.start()
+			thread1.join()
+			thread2.join()
+			unitedSet = (obj.set1 & obj.set2)
+			fileWrite1 = allignedDirectory + chan1Alligning[i][0:11] + "-" + chan1Alligning[j][0:11] + "-" + chan1Alligning[i][-3:] + ".txt"
+			fileWrite2 = allignedDirectory + chan1Alligning[j][0:11] + "-" + chan1Alligning[i][0:11] + "-" + chan1Alligning[i][-3:] + ".txt"
+			thread1 = threading.Thread(target = obj.writeTheAllignedFile, args = (fileName1, unitedSet, fileWrite1))
+			thread2 = threading.Thread(target = obj.writeTheAllignedFile, args = (fileName2, unitedSet, fileWrite2))	
+			thread1.start()
+			thread2.start()
+			thread1.join()
+			thread2.join()
+
+
+	obj.set1 = set()
+	obj.set2 = set()
+	for i in range(len(chan6Alligning)):
+		for j in range(i + 1, len(chan6Alligning)):
+			obj.set1 = set()
+			obj.set2 = set()
+			fileName1 = address + "/" + chan6Alligning[i]
+			fileName2 = address + "/" + chan6Alligning[j]		
+			thread1 = threading.Thread(target = obj.alignTime, args = (fileName1, obj.set1))
+			thread2 = threading.Thread(target = obj.alignTime, args = (fileName2, obj.set2))
+			thread1.start()
+			thread2.start()
+			thread1.join()
+			thread2.join()
+			unitedSet = (obj.set1 & obj.set2)
+			fileWrite1 = allignedDirectory + chan6Alligning[i][0:11] + "-" + chan6Alligning[j][0:11] + "-" + chan6Alligning[i][-3:] + ".txt"
+			fileWrite2 = allignedDirectory + chan6Alligning[j][0:11] + "-" + chan6Alligning[i][0:11] + "-" + chan6Alligning[i][-3:] + ".txt"
+			thread1 = threading.Thread(target = obj.writeTheAllignedFile, args = (fileName1, unitedSet, fileWrite1))
+			thread2 = threading.Thread(target = obj.writeTheAllignedFile, args = (fileName2, unitedSet, fileWrite2))	
+			thread1.start()
+			thread2.start()
+			thread1.join()
+			thread2.join()
+
+	obj.set1 = set()
+	obj.set2 = set()
+	for i in range(len(chan11Alligning)):
+		for j in range(i + 1, len(chan11Alligning)):
+			obj.set1 = set()
+			obj.set2 = set()
+			fileName1 = address + "/" + chan11Alligning[i]
+			fileName2 = address + "/" + chan11Alligning[j]			
+			thread1 = threading.Thread(target = obj.alignTime, args = (fileName1, obj.set1))
+			thread2 = threading.Thread(target = obj.alignTime, args = (fileName2, obj.set2))
+			thread1.start()
+			thread2.start()
+			thread1.join()
+			thread2.join()
+			unitedSet = (obj.set1 & obj.set2)
+			fileWrite1 = allignedDirectory + chan11Alligning[i][0:11] + "-" + chan11Alligning[j][0:11] + "-" + chan11Alligning[i][-3:] + ".txt"
+			fileWrite2 = allignedDirectory + chan11Alligning[j][0:11] + "-" + chan11Alligning[i][0:11] + "-" + chan11Alligning[i][-3:] + ".txt"
+			thread1 = threading.Thread(target = obj.writeTheAllignedFile, args = (fileName1, unitedSet, fileWrite1))
+			thread2 = threading.Thread(target = obj.writeTheAllignedFile, args = (fileName2, unitedSet, fileWrite2))	
+			thread1.start()
+			thread2.start()
+			thread1.join()
+			thread2.join()			
+
+			
+	
+	# print(obj.set2)
+	# obj.crossCor()

@@ -243,8 +243,8 @@ class learningAlgs:
 			
 
 	#checking the whether we processed the raw data previously or not
-	def csvChecker(self, fileName, model, nodeNumber):
-		pathFile = "node" + nodeNumber + "/CSV/" + fileName + ".csv"
+	def csvChecker(self, fileName, model, address):
+		pathFile = address + "/CSV/" + fileName + ".csv"
 		print(str(fileName) + " is in csvChecker\n")
 		if os.path.isfile(pathFile) == True:
 			print("we have the csv file: pulling out data\n")
@@ -279,6 +279,58 @@ class learningAlgs:
 		else:
 			print("processed raw data is not available\n")
 			return False, False, False
+			
+			
+	def seperatedCsvChecker(self, fileName, model, address):
+		
+		counter = 0
+		pathFile = address + "/CSV/" + fileName + "-" + str(counter) + ".csv"
+		arr = []
+		size = []
+		while os.path.isfile(pathFile) == True:
+			counter += 1
+			print(str(pathFile) + " is in csvChecker\n")
+			statinfo = os.stat(pathFile)
+			arr.append(pathFile)
+			size.append(statinfo.st_size)
+			pathFile = address + "/CSV/" + fileName + "-" + str(counter) + ".csv"
+		
+		pathFile = arr[np.argmax(size)]
+		print("selected file is: " + pathFile)
+		
+		if os.path.isfile(pathFile) == True:
+			print("we have the csv file: pulling out data\n")
+			#read the data from csv file
+			headers = ['col1', 'CU', 'time']
+			parse_date = ['time']
+			data = pandas.read_csv(pathFile, header = None, names = headers, parse_dates = parse_date)
+			
+			#pulling the time data out
+			timeArr = data["time"]
+			
+			#pulling CU data out and convert it to a classification or non classification problem
+			chanUtil = data[["CU"]].values
+			if model == "manualClassification":
+				print("doing manual clustering\n")
+				for i in range(len(chanUtil)):
+					chanUtil[i] = dataMan.normalClassification(float(chanUtil[i]))
+			
+			elif model == "KMeansClassification":
+				print("doing K-means clustering\n")
+				chanUtil = dataMan.clusteringKMeans(chanUtil)
+					
+			
+			chanUtil = chanUtil.reshape((len(chanUtil)))
+			print(chanUtil)
+			print(np.unique(chanUtil))
+			
+			print("returning the processed raw data back\n")
+			time.sleep(1)
+			return True, chanUtil, timeArr
+		
+		else:
+			print("processed raw data is not available\n")
+			return False, False, False			
 			
 	
 	def convertTime(self, value):

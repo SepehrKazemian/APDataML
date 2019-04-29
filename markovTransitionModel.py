@@ -46,16 +46,16 @@ class MarkovChain():
 		
 		print("checking pickles\n")
 		
-		pickleName = "./node1/markovianTimePickles/cuTrans" + str(fileName) + str(timerInMinute)
+		pickleName = "./node2/markovianTimePickles/cuTrans" + str(fileName) + str(timerInMinute)
 		if os.path.isfile(pickleName) == True:
 			with open(pickleName, "rb") as f:
 				cuTrans = pickle.load(f)
 			
-			pickleName = "./node1/markovianTimePickles/cuValuesArr" + str(fileName) + str(timerInMinute)
+			pickleName = "./node2/markovianTimePickles/cuValuesArr" + str(fileName) + str(timerInMinute)
 			with open(pickleName, 'rb') as f:
 				cuValuesArr = pickle.load(f)
 				
-			pickleName = "./node1/markovianTimePickles/timeValuesArr" + str(fileName) + str(timerInMinute)
+			pickleName = "./node2/markovianTimePickles/timeValuesArr" + str(fileName) + str(timerInMinute)
 			with open(pickleName, 'rb') as f:
 				timeValuesArr = pickle.load(f)
 			
@@ -70,7 +70,7 @@ class MarkovChain():
 		
 		plotterClass = plot.plottData()
 		timerInMinute = 20
-		fileName = ['500f8022b880', '500f80271400']
+		fileName = ['Node2.txt', 'Node5.txt']
 		
 		CU_FileChunks = None
 		
@@ -430,16 +430,16 @@ class MarkovChain():
 			next = cuValuesArr[i, 0] / 0.02
 			cuTrans[i, math.floor(start), math.floor(next)] += 1
 				
-		pickleName = "./node1/markovianTimePickles/cuTrans"+ str(fileName) + str(timerInMinute)
+		pickleName = "./node2/markovianTimePickles/cuTrans"+ str(fileName) + str(timerInMinute)
 		with open(pickleName, 'wb') as f:
 			pickle.dump(cuTrans, f)
 			
-		pickleName = "./node1/markovianTimePickles/cuValuesArr"+ str(fileName) + str(timerInMinute)
+		pickleName = "./node2/markovianTimePickles/cuValuesArr"+ str(fileName) + str(timerInMinute)
 		with open(pickleName, 'wb') as f:
 			pickle.dump(cuValuesArr, f)			
 
 		
-		pickleName = "./node1/markovianTimePickles/timeValuesArr"+ str(fileName) + str(timerInMinute)
+		pickleName = "./node2/markovianTimePickles/timeValuesArr"+ str(fileName) + str(timerInMinute)
 		with open(pickleName, 'wb') as f:
 			pickle.dump(timeValuesArr, f)
 		

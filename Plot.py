@@ -35,7 +35,7 @@ class plottData:
 		self.chanUtil = []
 			
 		
-	def prepration(self):
+	def prepration(self, fileName):
 	
 		channelPlotterBool = 0
 		channelBasedFileExist = 0
@@ -50,20 +50,32 @@ class plottData:
 			return 0
 			
 		#finding all the files in the folder
-		nodeNumber = input("what is the node number? ")
-		files = subprocess.Popen("ls " + "node" + str(nodeNumber) + "/extractedData/", shell=True, stdout=subprocess.PIPE)
-		fileNames = files.stdout.read().decode("ascii")
-		fileNameArr = []
-		strName = ""
+		#nodeNumber = input("what is the node number? ")
+		nodeNumber = 2
+		address = input("what is the absolute address? ")
 		
+		extraArr = []
+		if fileName == "":
+			fileNameArr = os.listdir(address)
+			for i in range(len(fileNameArr)):
+				if ".txt" not in fileNameArr[i]:
+					extraArr.append(fileNameArr[i])
 		
-		for i in range(len(str(fileNames))):
-			if str(fileNames[i]) != "\n":
-				strName += str(fileNames[i])
-			else:
-				fileNameArr.append(strName)
-				strName = ""
-				
+			for i in range(len(extraArr)):
+				fileNameArr.remove(extraArr[i])
+		
+			print(fileNameArr)
+			# for i in range(len(str(fileNames))):
+				# if str(fileNames[i]) != "\n":
+					# strName += str(fileNames[i])
+				# else:
+					# fileNameArr.append(strName)
+					# strName = ""
+		
+		else:
+			fileNameArr = []
+			fileNameArr.append(fileName)
+
 		#fileNameArr = ['40017ad6b2e0-6', '500f801e28a0-6']
 				 
 		preHour = ''
@@ -108,26 +120,28 @@ class plottData:
 		if int(channelPlotterBool) == 0 or int(channelPlotterBool) == 2:
 			LA = classImportLA.learningAlgs()
 			for i in range(len(fileNameArr)):
-				pathFile = "node" + str(nodeNumber) + "/CSV/" + fileNameArr[i] + ".csv"
+				# absoluteAdd = "/home/Sepehr/Desktop/project/thesis/data/11node1-5/alligned"
+				# fileAbsoluteAdd = absoluteAdd + str(fileNameArr[i])
+				pathFile = address + "/CSV/"+fileNameArr[i] + ".csv"
 				if os.path.isfile(pathFile) == False:
-					self.processRawDataCaller(fileNameArr[i], nodeNumber, channelPlotterBool, timeInterval)
-				stat, chanUtil, timeArr = LA.csvChecker(fileNameArr[i], 0, nodeNumber)
+					self.processRawDataCaller(fileNameArr[i], address, channelPlotterBool, timeInterval)
+				stat, chanUtil, timeArr = LA.csvChecker(fileNameArr[i], 0, address)
 				if int(plotterBool) == 1:
-					self.plotting(fileNameArr[i], chanUtil, timeArr, nodeNumber, channelPlotterBool)
+					self.plotting(fileAbsoluteAdd, chanUtil, timeArr, address, channelPlotterBool)
 				# else:
 					# return chanUtil, timeArr			
 		
 			
 
-	def processRawDataCaller(self, fileName, nodeNumber, channelPlotterBool, timeInterval):
-		fileNameStr = "node" + str(nodeNumber) + "/extractedData/" + str(fileName)
+	def processRawDataCaller(self, fileName, address, channelPlotterBool, timeInterval):
+		fileNameStr = str(fileName)
 		#sending file for data extraction
-		dataMan.dataSplitting(fileName, channelPlotterBool, 0, timeInterval, nodeNumber)
+		dataMan.dataSplitting(fileName, channelPlotterBool, 0, timeInterval, address)
 		#now we have files for that
 		
 			
 
-	def plotting(self, fileName, CU, Time, nodeNumber, channelPlotterBool):
+	def plotting(self, fileName, CU, Time, address, channelPlotterBool):
 		#print(Time)
 		#print(CU)
 		if int(channelPlotterBool) == 2: #Time is Count here
@@ -141,10 +155,12 @@ class plottData:
 		print("yoooohooooooooooooooooooooooooooooooo")
 		layout = go.Layout(title= titleAP, showlegend = False)
 		fig = go.Figure(data=data, layout=layout)
-		plotName = "node" + str(nodeNumber) + "/plot/" + str(fileName) + ".html"
+
+		absoluteAdd = "/home/Sepehr/Desktop/project/thesis/data/11node1-5/alligned"		
+		plotName = address + "/plot/" + str(fileName) + ".html"
 		offline.plot(fig, filename = plotName)
 			
 
 if __name__ == '__main__':
 	obj = plottData()
-	obj.prepration()
+	obj.prepration("")

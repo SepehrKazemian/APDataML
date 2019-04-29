@@ -34,7 +34,7 @@ from sklearn.cluster import KMeans
 import logging
 
 
-def dataSplitting(fileName, channelBasedBool, classifier, timeInterval, nodeNumber):
+def dataSplitting(fileName, channelBasedBool, classifier, timeInterval, address):
 	logging.basicConfig(filename='example.log',level=logging.DEBUG)
 	print("salam")
 	#print(fileName + " in datasplitting func")
@@ -51,8 +51,13 @@ def dataSplitting(fileName, channelBasedBool, classifier, timeInterval, nodeNumb
 	preMaxVal = 0
 	channelCheck = 0
 	maxVal = 0
-	fileRead = "node" + str(nodeNumber) +"/extractedData/" + str(fileName)
-	fileWrite = str(fileName)
+	fileRead = address + str(fileName)
+	countingLags = 1
+	
+	counterLag = 0
+	strLags = "-" + str(counterLag) 
+	fileWrite = str(fileName) + strLags
+	print("the writing fileName is: " + fileWrite)
 		
 	#print("here")
 	csvArrTime = []
@@ -181,36 +186,45 @@ def dataSplitting(fileName, channelBasedBool, classifier, timeInterval, nodeNumb
 					counter = 1
 				
 				elif currTimeStamp - prevTime >= timeInterval:
+					# print("bigger than interval")
+					# print("currTimeStamp is: " + str(currTimeStamp))
+					# print("prevTime is: " + str(prevTime))
 					
 					# logging.info("second time")
 					# logging.info(str(currTimeStamp))
 					# logging.info(str(prevTime))
 					# logging.info(str(int(cu)))
 					# logging.info(str(maxVal))
+					creatingLagsBoolean = 0
+					
 					
 					while int((currTimeStamp - prevTime) / timeInterval) > 0:
-						currTimeStampUTC = datetime.datetime.fromtimestamp(prevTime).strftime('%Y-%m-%d %H:%M:%S')
-						currTimeStampUTC = datetime.datetime.strptime(currTimeStampUTC, '%Y-%m-%d %H:%M:%S')
-						central = offset + currTimeStampUTC
-						#central = currTimeStampUTC
-						
-						#it seems sickit learn cannot work with datetime, so we have to reconvert it to
-						#values
-						centralTimeStamp = (datetime.datetime.strptime(str(central), "%Y-%m-%d %H:%M:%S") - datetime.datetime(1970,1,1)).total_seconds()
-						
-						csvArrTime.append(central)
-						timeArr.append(central)
-						csvArrCU.append(maxVal)
-						if classifier == "man":
-							chanUtil = np.append(chanUtil, normalClassification(maxVal/255))
+						#print("wowowwww")
+						if creatingLagsBoolean == 0 and int((currTimeStamp - prevTime) / timeInterval) < 600:
+							currTimeStampUTC = datetime.datetime.fromtimestamp(prevTime).strftime('%Y-%m-%d %H:%M:%S')
+							currTimeStampUTC = datetime.datetime.strptime(currTimeStampUTC, '%Y-%m-%d %H:%M:%S')
+							#central = offset + currTimeStampUTC
+							central = currTimeStampUTC
+							
+							#it seems sickit learn cannot work with datetime, so we have to reconvert it to
+							#values
+							centralTimeStamp = (datetime.datetime.strptime(str(central), "%Y-%m-%d %H:%M:%S") - datetime.datetime(1970,1,1)).total_seconds()
+							
+							csvArrTime.append(central)
+							timeArr.append(central)
+							csvArrCU.append(maxVal)
+							if classifier == "man":
+								chanUtil = np.append(chanUtil, normalClassification(maxVal/255))
 
-						# logging.info("third time")
-						# logging.info(str(central))
-						# logging.info(str(currTimeStamp))
-						# logging.info(str(prevTime))
-						# logging.info(str(int(cu)))
-						# logging.info(str(maxVal))
-
+						elif creatingLagsBoolean == 0:
+							creatingLagsBoolean = 1
+							pandasWriting(csvArrTime, csvArrCU, fileWrite, address)
+							csvArrTime = []
+							csvArrCU = []
+							counterLag += 1
+							strLags = "-" + str(counterLag)
+							fileWrite =  str(fileName) + strLags
+							
 						prevTime = prevTime + timeInterval
 					
 
@@ -232,7 +246,7 @@ def dataSplitting(fileName, channelBasedBool, classifier, timeInterval, nodeNumb
 				print("channel utilization error")
 	
 
-	pandasWriting(csvArrTime, csvArrCU, fileWrite, nodeNumber)
+	pandasWriting(csvArrTime, csvArrCU, fileWrite, address)
 	
 	if classifier == "k":
 		chanUtil = clusteringKMeans(csvArrCU)
@@ -241,9 +255,9 @@ def dataSplitting(fileName, channelBasedBool, classifier, timeInterval, nodeNumb
 	return chanUtil, timeArr
 	
 	
-def pandasWriting(csvArrTime, csvArrCU, fileWrite, nodeNumber):
+def pandasWriting(csvArrTime, csvArrCU, fileWrite, address):
 	dataFile = pandas.DataFrame(data = {"time": csvArrTime, "CU": csvArrCU})
-	with open(str("node" + nodeNumber + "/CSV/" + str(fileWrite) + ".csv"), 'a') as file:
+	with open((str(address) + "/CSV/" + str(fileWrite) + ".csv"), 'a') as file:
 		dataFile.to_csv(file, sep = ",", header = False)
 	print("hereee")
 
