@@ -200,7 +200,7 @@ def dataSplitting(fileName, channelBasedBool, classifier, timeInterval, address)
 					
 					while int((currTimeStamp - prevTime) / timeInterval) > 0:
 						#print("wowowwww")
-						if creatingLagsBoolean == 0 and int((currTimeStamp - prevTime) / timeInterval) < 600:
+						if creatingLagsBoolean == 0 and int((currTimeStamp - prevTime) / timeInterval) < 100:
 							currTimeStampUTC = datetime.datetime.fromtimestamp(prevTime).strftime('%Y-%m-%d %H:%M:%S')
 							currTimeStampUTC = datetime.datetime.strptime(currTimeStampUTC, '%Y-%m-%d %H:%M:%S')
 							#central = offset + currTimeStampUTC

@@ -21,13 +21,25 @@ list_of_files_array = []
 for i in range(0, len(list_of_files), +16):
 	list_of_files_array.append(list_of_files[i: i+16])
 
+print(sorted(list_of_files_array))
+
 	
 extra_array = [] #to remove the same AP files with the different last bit
 for i in range(len(list_of_files_array)):
 	if list_of_files_array[i] not in extra_array:
 		ap_mac_char = list_of_files_array[i][0: 11]
+		five_or_twoPointFour = 0
+		if str.isdigit(list_of_files_array[i][11]):
+			five_or_twoPointFour = "2.4"
+		else:
+			print(list_of_files_array[i])
+			five_or_twoPointFour = "5"
 		for j in range(i + 1, len(list_of_files_array)):
-			if list_of_files_array[j][0: 11] == ap_mac_char:
+			if str.isdigit(list_of_files_array[j][11]):
+				lastBit = "2.4"
+			else:
+				lastBit = "5"
+			if list_of_files_array[j][0: 11] == ap_mac_char and lastBit == five_or_twoPointFour:
 				extra_array.append(list_of_files_array[j])
 			
 for i in range(len(extra_array)):

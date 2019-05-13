@@ -47,22 +47,7 @@ print("start loading")
 address = input("give the channel seperation folder files address: ")
 plotter = plot.plottData()
 LA_Obj = LA.learningAlgs()
-# fileNameArr = ["500f8027140-500f8022b88-H11.txt", "500f8022b88-500f8027140-H11.txt",
-	# "500f8027112-500f8027140-H11.txt", "500f8027140-500f8027112-H11.txt",
-	# "500f8027112-500f8022b88-H11.txt", "500f8022b88-500f8027112-H11.txt",
-	# "500f801cf22-500f8022aca-H11.txt", "500f8022aca-500f801cf22-H11.txt",
-	# "500f8027112-500f8022aca-H11.txt", "500f8022aca-500f8027112-H11.txt",
-	# "500f8027140-500f8022aca-H11.txt", "500f8022aca-500f8027140-H11.txt",
-	# "500f8022b88-500f8022aca-H11.txt", "500f8022aca-500f8022b88-H11.txt",
-	# "500f8022ab4-500f8022aca-H11.txt", "500f8022aca-500f8022ab4-H11.txt",
-	# "500f8022b88-500f8022ab4-H11.txt", "500f8022ab4-500f8022b88-H11.txt",
-	# "500f8027112-500f8022ab4-H11.txt", "500f8022ab4-500f8027112-H11.txt",
-	# "500f8022b88-500f801cf22-H11.txt", "500f801cf22-500f8022b88-H11.txt",
-	# "500f8027140-500f8022ab4-H11.txt", "500f8022ab4-500f8027140-H11.txt",
-	# "500f8027140-500f801cf22-H11.txt", "500f801cf22-500f8027140-H11.txt",
-	# "500f8027140-500f801cf9c-H11.txt", "500f801cf9c-500f8027140-H11.txt",
-	# "500f8022b88-500f801cf9c-H11.txt", "500f801cf9c-500f8022b88-H11.txt", 
-	# "500f801cf9c-500f8027112-H11.txt", "500f8027112-500f801cf9c-H11.txt"]
+
 
 
 # *****************************getting the fileNames and find its counterpart for processing*************************************
@@ -95,143 +80,186 @@ fileNameArr = fileNameOrdered
 	
 	
 # ************************loading the data from csv files ********************************	
-dataDimensFreeHours = [[] for i in range(len(fileNameArr))]
-dataDimensBusyHours = [[] for i in range(len(fileNameArr))]
+#fileNameArr = ["40017ad96c8-500f8022b12-CH6.txt", "500f8022b12-40017ad96c8-CH6.txt"]
+dataDimensFreeHours = [[[] for j in range(10)] for i in range(len(fileNameArr))]
+dataDimensBusyHours = [[[] for j in range(10)] for i in range(len(fileNameArr))]
+daysDate = [[] for i in range(len(fileNameArr))]
 
 for i in range(len(fileNameArr)):
-	stat, chanUtil, timeArr = LA_Obj.seperatedCsvChecker(fileNameArr[i], 0, address)
+	stat, data = LA_Obj.seperatedCsvChecker(fileNameArr[i], 0, address)
 	if stat == True:
 		#print(timeArr)
 		# print(timeArr[0])
 		# print(timeArr[0].hour)
 		# print(type(timeArr[0]))
 		# print(timeArr[0].day)
-		day = timeArr[0].day
-		print("the day is: " + str(day))
-		for j in range(len(chanUtil)):
-			if (timeArr[j].hour > 19 and timeArr[j].day == day) or (timeArr[j].hour < 10 and timeArr[j].day == day + 1): #boundaries for time
-				dataDimensFreeHours[i].append(chanUtil[j])
+		data['time'].apply(lambda x: daysDate[i].append(x.day) if x.day not in daysDate[i] else False)
+		#day = timeArr[0].day
+		#print("the day is: " + str(day))
+		for j in range(len(data['CU'])):
+			for x in range(len(daysDate[i])):
+				if (data['time'][j].hour > 19 and data['time'][j].day == daysDate[i][x]) or (data['time'][j].hour < 10 and data['time'][j].day == daysDate[i][x] + 1): #boundaries for time
+					dataDimensFreeHours[i][x].append(data['CU'][j])
 
-		for j in range(len(chanUtil)):
-			if (timeArr[j].hour <= 19 and timeArr[j].hour >= 10 and timeArr[j].day == day): #boundaries for time
-				dataDimensBusyHours[i].append(chanUtil[j])
+		for j in range(len(data['CU'])):
+			for x in range(len(daysDate[i])):
+				if (data['time'][j].hour <= 19 and data['time'][j].hour >= 10 and data['time'][j].day == daysDate[i][x]): #boundaries for time
+					# print(fileNameArr[i], days[x], j)
+					# print(dataDimensBusyHours[i])
+					dataDimensBusyHours[i][x].append(data['CU'][j])
 				
-		print(len(dataDimensFreeHours[i]))
-		print(len(dataDimensBusyHours[i]))	
+	# print(len(dataDimensFreeHours[0][0]))
+	# print(len(dataDimensBusyHours[0][0]))	
 	
 	
+# print(dataDimensBusyHours[0])
+# print(dataDimensBusyHours[1])
 #/home/Sepehr/Desktop/project/thesis/data/11node1-5/alligned/	
 	
-name = []
+names = []
 lag0ValBusy = []
 lag0ValFree = []
 dataLenBusy = []
 dataLenFree = []
+daysDateFree = []
+daysDateBusy = []
 busyTimeThreshold = []
 freeTimeThreshold = []
 
+	# "500f8027112-500f8027140-H11.txt", "500f8027140-500f8027112-H11.txt",
+	# "500f8027112-500f8022b88-H11.txt", "500f8022b88-500f8027112-H11.txt",
+	# "500f801cf22-500f8022aca-H11.txt", "500f8022aca-500f801cf22-H11.txt",
+	# "500f8027112-500f8022aca-H11.txt", "500f8022aca-500f8027112-H11.txt",
+	# "500f8027140-500f8022aca-H11.txt", "500f8022aca-500f8027140-H11.txt",
+	# "500f8022b88-500f8022aca-H11.txt", "500f8022aca-500f8022b88-H11.txt",
+	# "500f8022ab4-500f8022aca-H11.txt", "500f8022aca-500f8022ab4-H11.txt",
+	# "500f8022b88-500f8022ab4-H11.txt", "500f8022ab4-500f8022b88-H11.txt",
+	# "500f8027112-500f8022ab4-H11.txt", "500f8022ab4-500f8027112-H11.txt",
+	# "500f8022b88-500f801cf22-H11.txt", "500f801cf22-500f8022b88-H11.txt",
+	# "500f8027140-500f8022ab4-H11.txt", "500f8022ab4-500f8027140-H11.txt",
+	# "500f8027140-500f801cf22-H11.txt", "500f801cf22-500f8027140-H11.txt",
+	# "500f8027140-500f801cf9c-H11.txt", "500f801cf9c-500f8027140-H11.txt",
+	# "500f8022b88-500f801cf9c-H11.txt", "500f801cf9c-500f8022b88-H11.txt", 
+	# "500f801cf9c-500f8027112-H11.txt", "500f8027112-500f801cf9c-H11.txt"]
+
 #*******************************************Finding cross correlationg *************************	
 for i in range(0, len(fileNameArr), +2):
-	print("I am in")
-	print(fileNameArr[i])
-	print(i)
-	
-	if len(dataDimensFreeHours[i]) == 0 or len(dataDimensBusyHours[i]) == 0:
-		print("I have to continue the loop")
-		continue
-	
-	dataLenFree.append(len(dataDimensFreeHours[i]))
-	dataLenBusy.append(len(dataDimensBusyHours[i]))
-	print(dataLenFree)
-	print(dataLenBusy)
-	
-	in1 = (dataDimensFreeHours[i] - np.mean(dataDimensFreeHours[i]))/(np.std(dataDimensFreeHours[i]) * len(dataDimensFreeHours[i]))
-	in2 = (dataDimensFreeHours[i + 1] - np.mean(dataDimensFreeHours[i + 1]))/(np.std(dataDimensFreeHours[i + 1]))
-	corrFree = signal.correlate(in1, in2, mode='full')
-	
-	in1 = (dataDimensBusyHours[i] - np.mean(dataDimensBusyHours[i]))/(np.std(dataDimensBusyHours[i]) * len(dataDimensBusyHours[i]))
-	in2 = (dataDimensBusyHours[i + 1] - np.mean(dataDimensBusyHours[i + 1]))/(np.std(dataDimensBusyHours[i + 1]))	
-	corrBusy = signal.correlate(in1, in2, mode='full')
+	# print(dataDimensFreeHours)
+	# print(dataDimensBusyHours)
+	for x in range(len(daysDate[i])):
+		print("I am in")
+		print(fileNameArr[i])
+		print(i)
+		
+		if len(dataDimensFreeHours[i][x]) == 0 and len(dataDimensBusyHours[i][x]) == 0:
+			print("I have to continue the loop")
+			continue
+		
 
-	#print("len of corr is: " + str(len(corr)))
-	np.set_printoptions(threshold=np.inf)
-	# print(corr)
-	counterFree = []
-	for j in range( - int(len(corrFree) / 2), 0, +1):
-		counterFree.append(j)
-	for j in range(0, int(len(corrFree) / 2) + 1, +1):
-		counterFree.append(j)
+
+	
+		if len(dataDimensFreeHours[i][x]) != 0:
+			dataLenFree.append(len(dataDimensFreeHours[i][x]))
+			daysDateFree.append(dataDimensFreeHours[i][x])
+
+			in1 = (dataDimensFreeHours[i][x] - np.mean(dataDimensFreeHours[i][x]))/(np.std(dataDimensFreeHours[i][x]) * len(dataDimensFreeHours[i][x]))
+			in2 = (dataDimensFreeHours[i + 1][x] - np.mean(dataDimensFreeHours[i + 1][x]))/(np.std(dataDimensFreeHours[i + 1][x]))
+			corrFree = signal.correlate(in1, in2, mode='full')
+
+			
+			counterFree = []
+			for j in range( - int(len(corrFree) / 2), 0, +1):
+				counterFree.append(j)
+			for j in range(0, int(len(corrFree) / 2) + 1, +1):
+				counterFree.append(j)
+
+			freeThreshold = 0
+			for j in range(int(len(corrFree) / 2), 0, -1):
+				if corrFree[j] > 0.3:
+					freeThreshold += 1
+				else:
+					break
+					
+			for j in range(int(len(corrFree) / 2), int(len(corrFree)), +1):
+				if corrFree[j] > 0.3:
+					freeThreshold += 1
+				else:
+					break
+					
+			lag0ValFree.append(np.max(corrFree))
+			freeTimeThreshold.append(freeThreshold)
+
+			# trace1 = go.Scatter(
+			    # x = counterFree,
+			    # y = corrFree,
+			    # mode = 'lines',
+			    # name = 'lines'
+			# )
+			# data = [trace1]
+			# name = str(fileNameArr[i]) + "day" + str(daysDate[i][x]) + "FreeHours.html"
+			# plotAdd = address + "/plot/" + name
+			# offline.plot(data, filename = plotAdd)
 		
 		
-	counterBusy = []
-	for j in range( - int(len(corrBusy) / 2), 0, +1):
-		counterBusy.append(j)
-	for j in range(0, int(len(corrBusy) / 2) + 1, +1):
-		counterBusy.append(j)
+		if len(dataDimensBusyHours[i][x]) != 0:
 		
-	busyThreshold = 0
-	for j in range(int(len(corrBusy) / 2), 0, -1):
-		if corrBusy[j] > 0.3:
-			busyThreshold += 1
-		else:
-			break
+			dataLenBusy.append(len(dataDimensBusyHours[i][x]))
+			daysDateBusy.append(dataDimensBusyHours[i][x])
+		
 			
-	for j in range(int(len(corrBusy) / 2), int(len(corrBusy)), +1):
-		if corrBusy[j] > 0.3:
-			busyThreshold += 1
-		else:
-			break
-			
-			
-	freeThreshold = 0
-	for j in range(int(len(corrFree) / 2), 0, -1):
-		if corrFree[j] > 0.3:
-			freeThreshold += 1
-		else:
-			break
-			
-	for j in range(int(len(corrFree) / 2), int(len(corrFree)), +1):
-		if corrFree[j] > 0.3:
-			freeThreshold += 1
-		else:
-			break
+			in1 = (dataDimensBusyHours[i][x] - np.mean(dataDimensBusyHours[i][x]))/(np.std(dataDimensBusyHours[i][x]) * len(dataDimensBusyHours[i][x]))
+			in2 = (dataDimensBusyHours[i + 1][x] - np.mean(dataDimensBusyHours[i + 1][x]))/(np.std(dataDimensBusyHours[i + 1][x]))	
+			corrBusy = signal.correlate(in1, in2, mode='full')
 
-	name.append(fileNameArr[i])
-			
-	lag0ValBusy.append(np.max(corrBusy))
-	lag0ValFree.append(np.max(corrFree))
-	
-	busyTimeThreshold.append(busyThreshold)
-	freeTimeThreshold.append(freeThreshold)
-	
+			#print("len of corr is: " + str(len(corr)))
+			np.set_printoptions(threshold=np.inf)
+			# print(corr)
 
-	# trace1 = go.Scatter(
-	    # x = counterFree,
-	    # y = corrFree,
-	    # mode = 'lines',
-	    # name = 'lines'
-	# )
-	# data = [trace1]
-	# name = str(fileNameArr[i]) + "FreeHours.html"
-	# plotAdd = address + "/plot/" + name
-	# offline.plot(data, filename = plotAdd)
-	
-	
-	# trace2 = go.Scatter(
-	    # x = counterBusy,
-	    # y = corrBusy,
-	    # mode = 'lines',
-	    # name = 'lines'
-	# )
-	# data = [trace2]
-	# name = str(fileNameArr[i]) + "BusyHours.html"
-	# plotAdd = address + "/plot/" + name
-	# offline.plot(data, filename = plotAdd)	
+				
+				
+			counterBusy = []
+			for j in range( - int(len(corrBusy) / 2), 0, +1):
+				counterBusy.append(j)
+			for j in range(0, int(len(corrBusy) / 2) + 1, +1):
+				counterBusy.append(j)
+				
+			busyThreshold = 0
+			for j in range(int(len(corrBusy) / 2), 0, -1):
+				if corrBusy[j] > 0.3:
+					busyThreshold += 1
+				else:
+					break
+					
+			for j in range(int(len(corrBusy) / 2), int(len(corrBusy)), +1):
+				if corrBusy[j] > 0.3:
+					busyThreshold += 1
+				else:
+					break
+					
+					
+
+			names.append(fileNameArr[i])
+					
+			lag0ValBusy.append(np.max(corrBusy))
+			
+			busyTimeThreshold.append(busyThreshold)
+		
+		
+			# trace2 = go.Scatter(
+			    # x = counterBusy,
+			    # y = corrBusy,
+			    # mode = 'lines',
+			    # name = 'lines'
+			# )
+			# data = [trace2]
+			# name = str(fileNameArr[i]) + "day" + str(daysDate[i][x]) + "BusyHours.html"
+			# plotAdd = address + "/plot/" + name
+			# offline.plot(data, filename = plotAdd)	
 	
 
 trace = go.Table(
-    header=dict(values=['name', 'lag0ValBusy', 'lag0ValFree', 'busyThreshold', 'freeThreshold', 'dataDimensFreeHours', 'dataDimensBusyHours']),
-    cells=dict(values=[name, lag0ValBusy, lag0ValFree, busyTimeThreshold, freeTimeThreshold, dataLenFree, dataLenBusy]
+    header=dict(values=['name', 'lag0ValBusy', 'lag0ValFree', 'busyThreshold', 'freeThreshold', 'dataDimensFreeHours', 'dataDimensBusyHours', 'freeDay', 'busyDay']),
+    cells=dict(values=[names, lag0ValBusy, lag0ValFree, busyTimeThreshold, freeTimeThreshold, dataLenFree, dataLenBusy, daysDateFree, daysDateBusy]
                        ))
 
 data = [trace] 
