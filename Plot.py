@@ -125,8 +125,27 @@ class plottData:
 				pathFile = address + "/CSV/"+fileNameArr[i] + ".csv"
 				if os.path.isfile(pathFile) == False:
 					self.processRawDataCaller(fileNameArr[i], address, channelPlotterBool, timeInterval)
-				stat, chanUtil, timeArr = LA.csvChecker(fileNameArr[i], 0, address)
+				stat, data = LA.csvChecker(fileNameArr[i], 0, address)
 				if int(plotterBool) == 1:
+					timeArr = data["time"]
+					#pulling CU data out and convert it to a classification or non classification problem
+					chanUtil = data[["CU"]].values
+					# if model == "manualClassification":
+						# print("doing manual clustering\n")
+						# for i in range(len(chanUtil)):
+							# chanUtil[i] = dataMan.normalClassification(float(chanUtil[i]))
+					
+					# elif model == "KMeansClassification":
+						# print("doing K-means clustering\n")
+						# chanUtil = dataMan.clusteringKMeans(chanUtil)
+							
+					
+					chanUtil = chanUtil.reshape((len(chanUtil)))
+					# print(chanUtil)
+					# print(np.unique(chanUtil))
+					
+					# print("returning the processed raw data back\n")
+					# time.sleep(1)
 					self.plotting(fileAbsoluteAdd, chanUtil, timeArr, address, channelPlotterBool)
 				# else:
 					# return chanUtil, timeArr			
