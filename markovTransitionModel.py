@@ -242,6 +242,7 @@ class MarkovChain():
 				#sqrt_dis[i][j] = (np.sum((ans[i] - ans[j])**2))**(1/2)
 				#plotterIndexes[i][j] = euc_dis[i][j]
 			#print(sqrt_dis[i], i)
+			
 		print("total weight is: " + str(totW))
 		for i in range(ans.shape[0]):
 			for j in range(i + 1, ans.shape[0]):

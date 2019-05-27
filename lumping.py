@@ -210,7 +210,7 @@ LA = classImportLA.learningAlgs() #calling an object of the class
 
 #*************checking if we have the processed version of file in our CSV or not, if not we are gonna process data otherwise just we gonna read it
 pathFile = address + "/CSV/" + str(fileNameArr[0]) + ".csv"
-importlib.reload(datMan) #reload the class if it has cache (.pyc) to load the class from scratch
+importlib.reload(dataMan) #reload the class if it has cache (.pyc) to load the class from scratch
 if os.path.isfile(pathFile) == False:
         print("we do not have processed data for file " + str(fileNameArr[0]) + " so we are making it")
         dataMan.normalDataSplitting(fileNameArr[0], 0, 0, timeInterval, address)
@@ -303,13 +303,21 @@ rowArg = []
 colArg = []
 y = 0
 z = 0
-x = 5
+x = 0
 errorsArr = []
 lumpedArr = []
 sectorsArr = []
-#if x == 5: #for testing we want to use only one of the matrices
-for x in range(len(cuTrans_cpy)):
-    print("reading next trans matrix")
+remainedClasses = []
+
+#*********we define all the possible classes***********
+for i in range(len(cuTrans_cpy[0])):
+    remainedClasses.append(i)
+    
+    
+for x in range(10):
+    rowArg = []
+    colArg = []
+# if x == 0:
     for i in range(len(cuTrans_cpy[x])):
         if np.sum(cuTrans_cpy[x][i]) == 0:
             rowArg.append(i)
@@ -318,25 +326,60 @@ for x in range(len(cuTrans_cpy)):
             
     deleteList = list(set(rowArg) & set(colArg))
     sizeOfNewArr = len(deleteList)
+#     print(deleteList)
     newArr = np.zeros(shape=(51-sizeOfNewArr, 51-sizeOfNewArr))
     
-    
+#     print(x)
+#     print(cuTrans_cpy[x].shape)
+    z = 0
+    y = 0
     for i in range(len(cuTrans_cpy[x])):
         if i not in deleteList: 
             for j in range(51):
                 if j not in deleteList:
-                    newArr[z][y] = cuTrans_cpy[1][i][j]
+                    newArr[z][y] = cuTrans_cpy[x][i][j]
+#                     print(i, j)
                     y += 1
             y = 0
             z += 1
-    print(newArr)
-    print(newArr.shape)	  
-    combinationEnum(newArr)
-    err, lump, sec = combinationEnum(newArr)
+#     print(newArr.shape)
+    
+    
+    
+#     print(remainedClasses)
+    uncommonList = list(set(remainedClasses) - set(deleteList))
+    
+    classifierArr = []
+    extraVar = math.inf
+    prevIndex = 0
+    for i in range(len(uncommonList)):
+        if i == 0:
+            classifierArr.append([])
+            classifierArr[i].append(uncommonList[i])
+            extraVar = uncommonList[i]
+            prevIndex = i
+        elif extraVar + 1 == uncommonList[i]:
+            classifierArr[prevIndex].append(uncommonList[i])
+            extraVar += 1
+        else:
+            classifierArr.append([])
+            classifierArr[prevIndex + 1].append(uncommonList[i])
+            prevIndex += 1
+            extraVar = uncommonList[i]
+    
+    print(x)
+    print(classifierArr)
+#     print(len(classifierArr))
+#     print(uncommonList)
+#     print(newArr)
+#     arrNumpy = [[0], [7, 8, 9], [10, 11, 12, 13]]
+#     assert (len(uncommonList) == newArr.shape[0]), "something is wrong when eliminating"
+    print(newArr.shape)
+#     combinationEnum(newArr, classifierArr)
+    err, lump, sec = combinationEnum(newArr, classifierArr)
     errorsArr.append(err)
     lumpedArr.append(lump)
     sectorsArr.append(sec)
-
     with open("lumpedError", "wb") as file:
         pickle.dump(errorsArr, file)
         
