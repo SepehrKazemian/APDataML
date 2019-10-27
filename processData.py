@@ -76,7 +76,7 @@ def processingData():
     #*************checking if we have the processed version of file in our CSV or not, if not we are gonna process data otherwise just we gonna read it
     pathFile = address + "/CSV/" + str(fileNameArr[0]) + ".csv"
     filePath = address + "/" + str(fileNameArr[0])
-    importlib.reload(dataMan) #reload the class if it has cache (.pyc) to load the class from scratch
+    # importlib.reload(dataMan) #reload the class if it has cache (.pyc) to load the class from scratch
     if os.path.isfile(pathFile) == False:
             print("we do not have processed data for file " + str(fileNameArr[0]) + " so we are making it")
             numOfLines = int(os.popen('wc -l < ' + str(filePath)).read().split()[0])
