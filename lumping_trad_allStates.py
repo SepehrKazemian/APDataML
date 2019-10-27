@@ -63,10 +63,10 @@ print("hello")
 
 #*******************************************************************************
 # %% codecell
-# print(data)
 data = processData.dataFrameManipulation(data)
 numberOfStates = 255
-cuTrans = processData.markovianTransitionMatrixDegree1(data, numberOfStates)
+reload(processData)
+cuTrans = processData.markovianTransitionMatrixDegree1(data, numberOfStates, "CU")
 normalizedCuTrans = processData.normalizingTransMatrix(cuTrans)
 cuTrans_cpy = normalizedCuTrans.copy()
 
@@ -127,7 +127,7 @@ def reduceMatrixAllInOne(transitionMatrix):
 
 
 
-def reduceMatrixOneByOne(transitionMatrix):
+def preparingMatrixForLumping(transitionMatrix):
     reload(oldLumping)
     percentageMatrix_list = bandwidthPercentage(transitionMatrix)
     zero_cols_rows = []
@@ -150,49 +150,63 @@ def reduceMatrixOneByOne(transitionMatrix):
             percentageMatrix_list[i - 1][1] = percentageMatrix_list[i][1]
             del percentageMatrix_list[i]
 
+    for i in range(len(irreducible_matrix)):
+        if np.sum(irreducible_matrix[i], dtype = np.float32) != 1.0:
+            print(np.sum(irreducible_matrix[i], dtype = np.float32))
 
-    savedResult = 0
-    while True:
+    return percentageMatrix_list, irreducible_matrix
 
-        result = oldLumping.lumping(irreducible_matrix, percentageMatrix_list, True)
-        print(irreducible_matrix)
+def lumpingStatesOneByOne(percentageMatrix_list, irreducible_matrix):
 
-        if result == None:
-            return savedResult, percentageMatrix_list
-            break
-        else:
-            savedResult = result
+    # savedResult = 0
+    result = oldLumping.lumping(irreducible_matrix, percentageMatrix_list, True)
 
-        min_degree, min_error, irreducible_matrix, best_sectors = result[0], result[1], result[2], result[3]
+    min_degree, min_error, irreducible_matrix, best_sectors = result[0], result[1], result[2], result[3]
 
-        zero_cols_rows = []
-        for i in range(len(irreducible_matrix)):
-            if (np.sum(irreducible_matrix[i]) == 0) and (np.sum(irreducible_matrix[:,i]) == 0):
-                zero_cols_rows.append(i)
+    zero_cols_rows = []
+    for i in range(len(irreducible_matrix)):
+        if (np.sum(irreducible_matrix[i]) == 0) and (np.sum(irreducible_matrix[:,i]) == 0):
+            zero_cols_rows.append(i)
 
-        if len(zero_cols_rows) != 0:
-            for i in range(len(zero_cols_rows) - 1, -1, -1):
-                irreducible_matrix = np.delete(irreducible_matrix, zero_cols_rows[i], axis = 0)
-                irreducible_matrix = np.delete(irreducible_matrix, zero_cols_rows[i], axis = 1)
+    if len(zero_cols_rows) != 0:
+        for i in range(len(zero_cols_rows) - 1, -1, -1):
+            irreducible_matrix = np.delete(irreducible_matrix, zero_cols_rows[i], axis = 0)
+            irreducible_matrix = np.delete(irreducible_matrix, zero_cols_rows[i], axis = 1)
 
-            percentageMatrix_list = reduceMatrix(percentageMatrix_list, zero_cols_rows)
+        percentageMatrix_list = reduceMatrix(percentageMatrix_list, zero_cols_rows)
 
+    print("length of best lumped is: ", len(irreducible_matrix))
 
+    percentageMatrix_list = mergeStates(best_sectors, percentageMatrix_list)
 
-        # print("min_degree is: ", min_degree)
-        # print("min_error is: ", min_error)
-        # print("best sectoring is: ", best_sectors)
-        # print("best lumped is: ", irreducible_matrix)
-        print("length of best lumped is: ", len(irreducible_matrix))
+    for i in range(len(irreducible_matrix)):
+        if (np.sum(irreducible_matrix[i], dtype = np.float32) != 1.0):
 
-        percentageMatrix_list = mergeStates(best_sectors, percentageMatrix_list)
-        # print("percentageMatrix is: ", percentageMatrix_list)
+            print(i, np.sum(irreducible_matrix[i], dtype = np.float32))
 
-        count = 0
-        for i in range(len(percentageMatrix_list)):
-            if percentageMatrix_list[i][2] == False:
-                count += 1
-        print("percentageMatrix length is: ", count)
+    for i in range(irreducible_matrix.shape[0]):
+        sum = 0
+        sum = np.sum(irreducible_matrix[i])
+        if sum != 0:
+            irreducible_matrix[i] = irreducible_matrix[i]/sum
+
+    for i in range(len(irreducible_matrix)):
+        if (np.sum(irreducible_matrix[i], dtype = np.float32) != 1.0):
+
+            print(i, np.sum(irreducible_matrix[i], dtype = np.float32))
+
+    count = 0
+    for i in range(len(percentageMatrix_list)):
+        if percentageMatrix_list[i][2] == False:
+            count += 1
+    print("percentageMatrix length is: ", count)
+
+    return(percentageMatrix_list, irreducible_matrix)
+
+    # if len(irreducible_matrix) == 26:
+        # break
+    # result = oldLumping.lumping(irreducible_matrix, percentageMatrix_list, False)
+    # return result
 
 def reduceMatrix(percentageMatrix, zero_cols_rows):
     index_in_percentage_matrix = np.inf
@@ -317,10 +331,212 @@ def mergeStates(best_sectors, percentageMatrix):
 
     return percentageMatrix
 
-lumpedResult = matrix_irreducibility(cuTrans_cpy[0])
-print(lumpedResult[0][2])
+lumpedAllInOne = reduceMatrixAllInOne(cuTrans_cpy[0])
+cuTrans_cpy.shape
 
-#
-#     sizeOfNewArr = len(deleteList)
-# #     print(deleteList)
-#     newArr = np.zeros(shape=(26-sizeOfNewArr, 26-sizeOfNewArr))
+for i in range(cuTrans_cpy.shape[0]):
+    percentageMatrix_list, irreducible_matrix = preparingMatrixForLumping(cuTrans_cpy[i])
+    result = oldLumping.lumping(irreducible_matrix, percentageMatrix_list, False)
+    name = "/home/netlab/Desktop/thesis/APDataML/pickles/normal_lumping_result_" + str(i) + ".pickle"
+    with open(name, 'wb') as handle:
+        pickle.dump(result, handle)
+
+    # with open(name, 'rb') as handle:
+    #     b = pickle.load(handle)
+
+
+
+name = "/home/netlab/Desktop/thesis/APDataML/pickles/normal_lumping_result_0.pickle"
+
+scores = {}
+if os.path.getsize(name) > 0:
+    with open(name, 'rb') as handle:
+        b = pickle.Unpickler(handle)
+        scores = unpickler.load()
+
+scores
+
+for i in range(60):
+    percentageMatrix_list, irreducible_matrix = lumpingStatesOneByOne(percentageMatrix_list, irreducible_matrix)
+
+c = 0
+for i in range(len(percentageMatrix_list)):
+    if percentageMatrix_list[i][2] == False:
+        c += 1
+        print(percentageMatrix_list[i][1], c, i)
+
+print(percentageMatrix_list[-1][1])
+
+reload(oldLumping)
+result = oldLumping.lumping(irreducible_matrix, percentageMatrix_list, False)
+print(percentageMatrix_list)
+print(lumpedResult)
+print(result[2])
+percentages = mergePercentages(percentageMatrix_list, result[-1])
+print(percentages)
+
+
+name = "/home/netlab/Desktop/thesis/APDataML/pickles/lumping_result_" + str(0) + ".pickle"
+with open(name, 'wb') as handle:
+    pickle.dump(result, handle)
+
+with open(name, 'rb') as handle:
+    b = pickle.load(handle)
+
+b
+result
+for i in range(len(percentageMatrix_list)):
+    if percentageMatrix_list[i][2] == False:
+        print(percentageMatrix_list[i][1])
+
+def mergePercentages(percentageMatrix, whole_subset):
+    start = 0
+    counter = 0
+    list_of_percentages = []
+    for i in range(1, len(whole_subset) - 1):
+        for j in range(start, len(percentageMatrix)):
+            start += 1
+            if percentageMatrix[j][2] == False:
+                counter += 1
+                if counter == whole_subset[i]:
+                    list_of_percentages.append((percentageMatrix[j][1]))
+                    break
+    return list_of_percentages
+
+percentages.append(100)
+
+XArraysForLearning, YArraysForLearning, XArraysForTesting, YArraysForTesting, boundaries = simpleLogisticRegression(data, 48, 30, percentages)
+
+Y = np.argmax(YArraysForLearning, 1)
+Y_test = np.argmax(YArraysForTesting, 1)
+print(Y.shape)
+reg = "l2"
+solvers = "lbfgs"
+clf = LogisticRegression(penalty = reg, max_iter = 100000, random_state = 0,
+                         solver = solvers , multi_class = 'multinomial')
+clf.fit(XArraysForLearning, Y)
+Ypred = clf.predict(XArraysForTesting)
+acc = accuracy_score(Y_test, Ypred)
+print(acc)
+saveResults.append((x, acc))
+
+
+def classifying(CU, boundaries):
+    occupiedBandwidth = (CU / 255) * 100
+    for i in range(len(boundaries)):
+        if occupiedBandwidth <= boundaries[i]:
+            return i
+
+def simpleLogisticRegression(data, numberOfTimeIntervals, minuteSplit, boundaries):
+
+    warnings.filterwarnings('always')
+    reg = "l2"
+    solvers = "lbfgs"
+    clf = LogisticRegression(penalty = reg, max_iter = 100000, random_state = 0,
+                             solver = solvers , multi_class = 'multinomial')
+    accuracyValue = 0
+    numOfElements = 0
+    f1scoreValue = 0
+    precisionValue = 0
+    recallValue = 0
+    prevRowTrain = np.inf
+    prevCU = np.inf
+
+    sampleIntervals = 6 #seconds
+    minuteSplit = 30 #minutes
+    numOfSamples = minuteSplit * 60 / sampleIntervals
+    # numberOfDays = len(numOfDays)
+    days = np.zeros(7)
+    numOfThirtyMinsPerDay = np.zeros(int((24 * 60) / minuteSplit)) #in this case 48
+    which6SecondsPerPeriod = np.zeros(int(minuteSplit * 60 / sampleIntervals)) #in this case 300
+    prevRowTrain = np.inf
+    prevCU = np.inf
+
+    for x in range(0, 1):
+        XArraysForLearning = []
+        YArraysForLearning = []
+        XArraysForTesting = []
+        YArraysForTesting = []
+
+        x = 0
+        iterPandas = data.loc[(data["timeIndex"] == x)].copy()
+
+        trainingDataFrame = iterPandas.iloc[:int(np.floor(0.8 * len(iterPandas)))].copy()
+
+        trainingTransitionMatrix = processData.markovianTransitionMatrixDegree1(trainingDataFrame, 255)
+        normalizedTrainTrans = processData.normalizingTransMatrix(trainingTransitionMatrix)
+        normalizedTrainTransition = normalizedTrainTrans.copy()
+
+        trainingDataFrame["cuClass"] = trainingDataFrame["CU"].apply(lambda x: classifying(x, boundaries))
+
+        stackCounter = 0
+        prevCU = 0
+        for index, row in trainingDataFrame.iterrows():
+            lastCU = np.zeros(len(boundaries))
+            lastCU[prevCU] = 1
+            which6SecondsPerPeriod[int(row["periodParticle"])] = 1
+            XArray = lastCU
+            XArray = np.append(XArray, which6SecondsPerPeriod)
+
+            if stackCounter == 0:
+                XArraysForLearning = XArray
+            else:
+                XArraysForLearning = np.vstack((XArraysForLearning, XArray))
+
+            recentCU = np.zeros(len(boundaries))
+            recentCU[row["cuClass"]] = 1
+
+            if stackCounter == 0:
+                YArraysForLearning = recentCU
+                stackCounter += 1
+            else:
+                YArraysForLearning = np.vstack((YArraysForLearning, recentCU))
+
+            which6SecondsPerPeriod[int(row["periodParticle"])] = 0
+            prevCU = row["cuClass"]
+
+
+        weights = np.random.randn(XArraysForLearning.shape[1])
+        print("Testing")
+        #********************LR testing********************
+
+
+        testingDataFrame = iterPandas.iloc[int(np.floor(0.8 * len(iterPandas))):].copy()
+
+        testingDataFrame["cuClass"] = testingDataFrame["CU"].apply(lambda x: classifying(x, boundaries))
+
+
+        stackCounter = 0
+        prevCU = 0
+        for index, row in testingDataFrame.iterrows():
+
+            lastCU = np.zeros(len(boundaries))
+            lastCU[prevCU] = 1
+            which6SecondsPerPeriod[int(row["periodParticle"])] = 1
+            XArray = lastCU
+            XArray = np.append(XArray, which6SecondsPerPeriod)
+
+            if stackCounter == 0:
+                XArraysForTesting = XArray
+
+            else:
+                XArraysForTesting = np.vstack((XArraysForTesting, XArray))
+    #         print(XArraysForTesting)
+
+            recentCU = np.zeros(len(boundaries))
+            recentCU[row["cuClass"]] = 1
+
+            if stackCounter == 0:
+                YArraysForTesting = recentCU
+                stackCounter += 1
+            else:
+                YArraysForTesting = np.vstack((YArraysForTesting, recentCU))
+    #         print(YArraysForTesting)
+
+            which6SecondsPerPeriod[int(row["periodParticle"])] = 0
+            prevCU = row["cuClass"]
+
+        print(XArraysForLearning.shape)
+        print(YArraysForLearning.shape)
+
+        return XArraysForLearning, YArraysForLearning, XArraysForTesting, YArraysForTesting, boundaries

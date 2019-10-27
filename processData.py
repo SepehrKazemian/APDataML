@@ -39,7 +39,7 @@ from sklearn.cluster import KMeans
 import timeIntervalPlotter as intervalPlotter
 import pysal
 import warnings
-import OldLumping as oldLumping
+import lumping_traditional as oldLumping
 import boundaryFull_SS_WeightedLumping as WLumping
 from importlib import reload
 from scipy.stats import rayleigh
@@ -111,12 +111,19 @@ def dataFrameManipulation(data):
     return data
 
 
-def markovianTransitionMatrixDegree1(data, numberOfClasses):
+def markovianTransitionMatrixDegree1(data, numberOfClasses, feature):
+
     dataCpy = data.copy()
-    if numberOfClasses > 255:
-        return 0
-    classCoeff = 255 / (numberOfClasses)
-    numberOfChunks = max(data["timeIndex"])
+    classCoeff = 0
+    if (feature == "CU") and (numberOfClasses <= 255):
+        classCoeff = 255 / (numberOfClasses)
+
+    elif (feature == str("diff")) and (numberOfClasses <= 510):
+        classCoeff = 510 / (numberOfClasses)
+
+
+
+    numberOfChunks = max(data["timeIndex"]) + 1
     cuTrans = np.zeros(shape=(numberOfChunks, numberOfClasses, numberOfClasses))
     start = -1
     next = -1
@@ -137,9 +144,10 @@ def markovianTransitionMatrixDegree1(data, numberOfClasses):
         start = -1
         next = -1
 
+
         for index, row in iterPandas.iterrows():
             start = next
-            next = math.floor(row["CU"] / classCoeff)
+            next = math.floor(row[feature] / classCoeff)
             if start != -1:
                 cuTrans[x, math.floor(start), math.floor(next)] += 1
     return cuTrans

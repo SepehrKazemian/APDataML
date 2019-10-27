@@ -54,6 +54,8 @@ def sectoring(permutedArr, sectorNumber):
     # print("here we look")
     # print(sectorNumber)
 
+    for i in range(len(sectorNumber)):
+        sectorNumber[i] -= 1
 
     disintegrated_list = [[0 for i in range(numbOfChunks)] for i in range(numbOfChunks)]
 
@@ -86,6 +88,7 @@ def sectoring(permutedArr, sectorNumber):
     horizental_indices_split = np.split(split_indices[:-1], sectorNumber[1:])
     horizental_array_split = np.split(permutedArr, sectorNumber[1:])
 
+
     for x in range(len(horizental_array_split) - 1):
         splitted_matrix.append(np.split(horizental_array_split[x], sectorNumber[1:], axis = 1)[:-1])
 
@@ -117,6 +120,7 @@ def sectoring(permutedArr, sectorNumber):
                 lumped_array[row][col] = np.sum(splitted_matrix[row][col])
 
             elif splitted_matrix[row][col].shape[0] != 1:
+                # print(splitted_matrix[row][col])
                 minValue = np.min(np.sum(splitted_matrix[row][col], axis = 1))
                 lumped_array[row][col] = np.min(np.sum(splitted_matrix[row][col], axis = 1))
                 for index in range(splitted_matrix[row][col].shape[0]):
@@ -141,6 +145,7 @@ def sectoring(permutedArr, sectorNumber):
 
     #**********************CALCULATING LUMPABILITY ERROR DONE ******************
 
+    # print(decoupling_degree, error, lumped_array, sectorNumber)
 
     return decoupling_degree, error, lumped_array, sectorNumber
 
@@ -171,7 +176,7 @@ def combinationEnum(reduced_transition_matrix, percentageMatrix, one_by_one_clus
         range_iteration = [number_of_lumped_clusters, number_of_lumped_clusters + 1]
 
     else:
-        range_iteration = [4, 8]
+        range_iteration = [5, 6]
 
     colEx = reduced_transition_matrix.copy()
 
@@ -182,41 +187,65 @@ def combinationEnum(reduced_transition_matrix, percentageMatrix, one_by_one_clus
 
     listOfSectors = [] #we use it to prevent repitative sectors to operate
 
+    listOfSectors = combination(5, len(reduced_transition_matrix), percentageMatrix)
 
-    for i in range(range_iteration[0], range_iteration[1]):
-        extraArr = []
-        for subset in combinations(numOfSectorsIndex, i): #drawing line for every possible index untill 5 classes
-            if (list(subset) not in extraArr):
-                if (check_limitation(list(subset), len(colEx), percentageMatrix, one_by_one_clustering)
-                    == True):
-                    extraArr.append(list(subset))
-                    sectorNumber = [0]
-                    for j in range(len(list(subset))):
+    # for i in range(range_iteration[0], range_iteration[1]):
+    #     print(i)
+    #     extraArr = []
+    #     counter = 0
+    #
+    #     print("I am going into combination function")
+    #
+    #     for i in range()
+    #
+    #
+    #     for subset in combinations(numOfSectorsIndex, i): #drawing line for every possible index untill 5 classes
+    #         if (list(subset) not in extraArr):
+    #             if (check_limitation(list(subset), len(colEx), percentageMatrix, one_by_one_clustering)
+    #                 == True):
+    #                 extraArr.append(list(subset))
+    #                 sectorNumber = [0]
+    #                 for j in range(len(list(subset))):
+    #
+    #                     sectorNumber.append(list(subset)[j])
+    # #                         sectorNumber.extend(extraArr[j])
+    #                 sectorNumber.append(len(colEx))
+    #                 if sectorNumber not in listOfSectors:
+    # #                             print("injam")
+    #                     # result = sectoring(colEx, sectorNumber)
+    #                     # print("resutl from sectoring is: ", result)
+    #                     listOfSectors.append(sectorNumber)
+    #
+    #             elif (boundaries(subset, len(colEx), percentageMatrix) == True):
+    #                 counter += 1
+    #                 if counter % 100 == 0:
+    #                     print(subset)
+    #                 sectorNumber = [0]
+    #
+    #                 extraArr.append(list(subset))
+    #                 for j in range(len(list(subset))):
+    #
+    #                     sectorNumber.append(list(subset)[j])
+    # #                         sectorNumber.extend(extraArr[j])
+    #                 sectorNumber.append(len(colEx))
+    #                 if sectorNumber not in listOfSectors:
+    # #                             print("injam")
+    #                     # result = sectoring(colEx, sectorNumber)
+    #                     # print("resutl from sectoring is: ", result)
+    #                     listOfSectors.append(sectorNumber)
 
-                        sectorNumber.append(list(subset)[j])
-    #                         sectorNumber.extend(extraArr[j])
-                    sectorNumber.append(len(colEx))
-                    if sectorNumber not in listOfSectors:
-    #                             print("injam")
-                        # result = sectoring(colEx, sectorNumber)
-                        # print("resutl from sectoring is: ", result)
-                        listOfSectors.append(sectorNumber)
+    print("we have these many sectors to check: ", len(listOfSectors))
+    # print(listOfSectors)
 
-                elif (boundaries(subset, len(colEx), percentageMatrix) == True):
-                    extraArr.append(list(subset))
-                    sectorNumber = [0]
-                    for j in range(len(list(subset))):
-
-                        sectorNumber.append(list(subset)[j])
-    #                         sectorNumber.extend(extraArr[j])
-                    sectorNumber.append(len(colEx))
-                    if sectorNumber not in listOfSectors:
-    #                             print("injam")
-                        # result = sectoring(colEx, sectorNumber)
-                        # print("resutl from sectoring is: ", result)
-                        listOfSectors.append(sectorNumber)
+    # for i in range(len(listOfSectors)):
+    #     print(i)
 
 
+
+    # print(listOfSectors[8])
+    # result = sectoring(colEx, listOfSectors[8][0:-1])
+    #
+    # print("here")
     func = partial(sectoring, colEx)
     p = multiprocessing.Pool(multiprocessing.cpu_count())
     lumping_results = p.map(func, listOfSectors)
@@ -229,45 +258,51 @@ def combinationEnum(reduced_transition_matrix, percentageMatrix, one_by_one_clus
     best_lumped_array = []
     best_sectors = []
 
+    return lumping_results
+
+
+
     # result contains: decoupling_degree, error, lumped_array, sectorNumber
 
     #finding the least degree of coupling in our matrices
-    for i in range(len(lumping_results)):
-        if lumping_results[i][0] < min_degree:
-            min_degree = lumping_results[i][0]
-            least_lumped_degree_array = []
-            least_lumped_degree_array.append(lumping_results[i])
-
-        elif lumping_results[i][0] == min_degree:
-            least_lumped_degree_array.append(lumping_results[i])
-
-
-    #finding the least error among least degrees of coupling in our matrices
-    if len(least_lumped_degree_array) >= 1:
-        if len(least_lumped_degree_array) > 1:
-            for i in range(len(least_lumped_degree_array)):
-                if min_error > least_lumped_degree_array[i][1]:
-                    min_error = least_lumped_degree_array[i][1]
-                    best_lumped_array = []
-                    best_lumped_array.append(least_lumped_degree_array[i])
-
-                elif min_error == least_lumped_degree_array[i][1]:
-                    best_lumped_array.append(least_lumped_degree_array[i])
-
-            min_degree = best_lumped_array[0][0]
-            min_error = best_lumped_array[0][1]
-            best_lumped = best_lumped_array[0][2]
-            best_sectors = best_lumped_array[0][3]
-
-        elif len(least_lumped_degree_array) == 1:
-            min_degree = least_lumped_degree_array[0][0]
-            min_error = least_lumped_degree_array[0][1]
-            best_lumped = least_lumped_degree_array[0][2]
-            best_sectors = least_lumped_degree_array[0][3]
-        return min_degree, min_error, best_lumped, best_sectors
-
-    else:
-        return None
+    # for i in range(len(lumping_results)):
+    #     # print(lumping_results[i][0], lumping_results[i][1])
+    #     if lumping_results[i][0] < min_degree:
+    #         min_degree = lumping_results[i][0]
+    #         least_lumped_degree_array = []
+    #         least_lumped_degree_array.append(lumping_results[i])
+    #
+    #     elif lumping_results[i][0] == min_degree:
+    #         least_lumped_degree_array.append(lumping_results[i])
+    #
+    # # print(least_lumped_degree_array)
+    #
+    # #finding the least error among least degrees of coupling in our matrices
+    # if len(least_lumped_degree_array) >= 1:
+    #     if len(least_lumped_degree_array) > 1:
+    #         for i in range(len(least_lumped_degree_array)):
+    #             if min_error > least_lumped_degree_array[i][1]:
+    #                 min_error = least_lumped_degree_array[i][1]
+    #                 best_lumped_array = []
+    #                 best_lumped_array.append(least_lumped_degree_array[i])
+    #
+    #             elif min_error == least_lumped_degree_array[i][1]:
+    #                 best_lumped_array.append(least_lumped_degree_array[i])
+    #
+    #         min_degree = best_lumped_array[0][0]
+    #         min_error = best_lumped_array[0][1]
+    #         best_lumped = best_lumped_array[0][2]
+    #         best_sectors = best_lumped_array[0][3]
+    #
+    #     elif len(least_lumped_degree_array) == 1:
+    #         min_degree = least_lumped_degree_array[0][0]
+    #         min_error = least_lumped_degree_array[0][1]
+    #         best_lumped = least_lumped_degree_array[0][2]
+    #         best_sectors = least_lumped_degree_array[0][3]
+    #     return min_degree, min_error, best_lumped, best_sectors
+    #
+    # else:
+    #     return None
 
 
 # def lumping():
@@ -283,6 +318,130 @@ def combinationEnum(reduced_transition_matrix, percentageMatrix, one_by_one_clus
 def lumping(reducedTransitionMatrix, percentageMatrix, boolean):
     result = combinationEnum(reducedTransitionMatrix, percentageMatrix, boolean)
     return result
+
+
+def combination(numberOfSectors, numberOfStates, percentageMatrix):
+
+    node_a = []
+    node_a_stateSpace = True
+
+    counter = 0 #index within sector values
+    for j in range(len(percentageMatrix)):
+        if percentageMatrix[j][2] == False:
+            counter += 1
+            if (percentageMatrix[j][1] >= 5) and (percentageMatrix[j][1] <= 25):
+                node_a.append((counter, j))
+
+            elif percentageMatrix[j][1] > 25:
+                break
+
+    root = Node(0)
+    for i in range(len(node_a)):
+        child = Node(node_a[i])
+        root.add_child(child)
+
+    extraArray = []
+
+    count = 0
+    for i in range(len(percentageMatrix)):
+        if percentageMatrix[i][2] == False:
+            count += 1
+            extraArray.append((i, percentageMatrix[i][1]))
+    # print("number of states are: ", numberOfStates, count)
+
+    # print("for the first node we have:")
+    # print(extraArray)
+    # for child in root.children:
+    #     print(child.data)
+    # print("for the first node we had.")
+
+    # print("I am going into recursive function of adding childre")
+
+    root = add_child_recursion(root, 1, numberOfSectors, percentageMatrix, numberOfStates + 1)
+    # print("I am going into recursive function of finding children")
+    array = []
+    sectorsArray = DFS_sectors(root, numberOfSectors + 1, array)
+    # print(sectorsArray)
+    sectors = []
+    for i in range(len(sectorsArray)):
+        extraArr = [0]
+        for j in range(len(sectorsArray[i])):
+            extraArr.append(sectorsArray[i][j][0])
+        sectors.append(extraArr)
+    # print(sectors)
+    return sectors
+
+def DFS_sectors(root, numberOfTotalSectors, array):
+    sectors = []
+    for child in root.children:
+        array.append(child.data)
+        if len(child.children) > 0:
+            returnVal = DFS_sectors(child, numberOfTotalSectors, array)
+            if len(returnVal) > 0:
+                sectors.extend(returnVal)
+        else:
+            if len(array) == numberOfTotalSectors:
+                sectors.append(list(array))
+        del array[-1]
+    return sectors
+
+
+        # if len(array) == numberOfTotalSectors:
+        #     sectors.append(array)
+        #     print(sectors)
+        # del array[-1]
+
+
+
+def add_child_recursion(root, sectorCounter, numberOfSectors, percentageMatrix, numberOfStates):
+    #counter is 1
+    for child in root.children:
+        # print(child.data)
+        indices = child.data
+        if sectorCounter < numberOfSectors:
+            # print("here")
+            returnedValues = checkBoundaries(indices[0], indices[1], percentageMatrix)
+
+            # print(returnedValues)
+            if returnedValues[0] == True:
+                for i in range(len(returnedValues[1])):
+                    grandChild = Node(returnedValues[1][i])
+                    child.add_child(grandChild)
+                # print(numberOfSectors, sectorCounter)
+                if numberOfSectors >= sectorCounter + 1:
+                    # print("here we go again")
+                    add_child_recursion(child, sectorCounter + 1, numberOfSectors,
+                                        percentageMatrix, numberOfStates)
+
+        elif sectorCounter == numberOfSectors:
+            # print("we want to add the last one")
+            # print("now here")
+            # print("we are adding the last one", (numberOfStates, len(percentageMatrix)))
+            if ((percentageMatrix[-1][1] - percentageMatrix[indices[1]][1]) <= 25) and (
+                (percentageMatrix[-1][1] - percentageMatrix[indices[1]][1]) >= 5):
+                # print("we are adding the last one")
+                grandChild = Node((numberOfStates, len(percentageMatrix)))
+                child.add_child(grandChild)
+    return root
+
+def checkBoundaries(sector_index, percentageMatrix_index, percentageMatrix):
+    # print("boundary checking")
+    children = []
+    for j in range(percentageMatrix_index + 1, len(percentageMatrix)):
+        if percentageMatrix[j][2] == False:
+            sector_index += 1
+            if ((percentageMatrix[j][1] - percentageMatrix[percentageMatrix_index][1])
+                >= 5) and (
+                (percentageMatrix[j][1] - percentageMatrix[percentageMatrix_index][1])
+                <= 25):
+                children.append((sector_index, j))
+
+            elif ((percentageMatrix[j][1] - percentageMatrix[percentageMatrix_index][1]) > 25):
+                break
+    if len(children) > 0:
+        return True, children
+    else:
+        return False, children
 
 def boundaries(candidate_subset, matrix_length, percentageMatrix):
     whole_subset = [0]
@@ -302,7 +461,7 @@ def boundaries(candidate_subset, matrix_length, percentageMatrix):
                     break
 
     for i in range(1, len(list_of_percentages)):
-        if (list_of_percentages[i] - list_of_percentages[i - 1]) > 25:
+        if ((list_of_percentages[i] - list_of_percentages[i - 1]) > 25) or ((list_of_percentages[i] - list_of_percentages[i - 1]) < 5):
             return False
 
     return True
@@ -401,3 +560,13 @@ def clustering(CU, bounds): #automatic clustering based on the 30 minutes time i
             return (i - 1)
 #     if x < 256 and x >= bounds[i]:
     return (len(bounds) - 1)
+
+
+
+class Node(object):
+    def __init__(self, data):
+        self.data = data
+        self.children = []
+
+    def add_child(self, obj):
+        self.children.append(obj)

@@ -37,7 +37,7 @@ import logging
 def dataSplitting(fileName, channelBasedBool, classifier, timeInterval, address):
 	print("new")
 	logging.basicConfig(filename='example.log',level=logging.DEBUG)
-	print("salam")
+	print("salam babaaaaa")
 	#print(fileName + " in datasplitting func")
 	now_timestamp = time.time()
 	offset = datetime.datetime.fromtimestamp(now_timestamp) - datetime.datetime.utcfromtimestamp(now_timestamp)
@@ -103,8 +103,16 @@ def dataSplitting(fileName, channelBasedBool, classifier, timeInterval, address)
 			elif line[0:3] == "Apr":
 				month = "04"
 			elif line[0:3] == "May":
-				month = "05"				
+				month = "05"
+			elif line[0:3] == "Jun":
+				month = "06"
+			elif line[0:3] == "Jul":
+				month = "07"
 			else:
+				print(line)
+				print(line[0:3])
+				print(line[4:6])
+				print(line[8:12])
 				print("problem in month")
 				
 			day = line[4:6]
@@ -259,7 +267,7 @@ def dataSplitting(fileName, channelBasedBool, classifier, timeInterval, address)
 	
 def normalDataSplitting(fileName, channelBasedBool, classifier, timeInterval, address):
 	logging.basicConfig(filename='example.log',level=logging.DEBUG)
-	print("salam")
+	print("salam babaaaaaaa")
 	#print(fileName + " in datasplitting func")
 	now_timestamp = time.time()
 	offset = datetime.datetime.fromtimestamp(now_timestamp) - datetime.datetime.utcfromtimestamp(now_timestamp)
@@ -325,8 +333,15 @@ def normalDataSplitting(fileName, channelBasedBool, classifier, timeInterval, ad
 			elif line[0:3] == "Apr":
 				month = "04"
 			elif line[0:3] == "May":
-				month = "05"				
+				month = "05"
+			elif line[0:3] == "Jun":
+				month = "06"
+			elif line[0:3] == "Jul":
+				month = "07"				
 			else:
+				print(line)
+				print(line[0:3])
+				print(line[4:6])
 				print("problem in month")
 				
 			day = line[4:6]
