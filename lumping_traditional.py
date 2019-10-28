@@ -329,7 +329,7 @@ def combination(numberOfSectors, numberOfStates, percentageMatrix):
     for j in range(len(percentageMatrix)):
         if percentageMatrix[j][2] == False:
             counter += 1
-            if (percentageMatrix[j][1] >= 5) and (percentageMatrix[j][1] <= 25):
+            if (percentageMatrix[j][1] >= 10) and (percentageMatrix[j][1] <= 25):
                 node_a.append((counter, j))
 
             elif percentageMatrix[j][1] > 25:
@@ -418,7 +418,7 @@ def add_child_recursion(root, sectorCounter, numberOfSectors, percentageMatrix, 
             # print("now here")
             # print("we are adding the last one", (numberOfStates, len(percentageMatrix)))
             if ((percentageMatrix[-1][1] - percentageMatrix[indices[1]][1]) <= 25) and (
-                (percentageMatrix[-1][1] - percentageMatrix[indices[1]][1]) >= 5):
+                (percentageMatrix[-1][1] - percentageMatrix[indices[1]][1]) >= 10):
                 # print("we are adding the last one")
                 grandChild = Node((numberOfStates, len(percentageMatrix)))
                 child.add_child(grandChild)
@@ -431,7 +431,7 @@ def checkBoundaries(sector_index, percentageMatrix_index, percentageMatrix):
         if percentageMatrix[j][2] == False:
             sector_index += 1
             if ((percentageMatrix[j][1] - percentageMatrix[percentageMatrix_index][1])
-                >= 5) and (
+                >= 10) and (
                 (percentageMatrix[j][1] - percentageMatrix[percentageMatrix_index][1])
                 <= 25):
                 children.append((sector_index, j))
@@ -461,7 +461,7 @@ def boundaries(candidate_subset, matrix_length, percentageMatrix):
                     break
 
     for i in range(1, len(list_of_percentages)):
-        if ((list_of_percentages[i] - list_of_percentages[i - 1]) > 25) or ((list_of_percentages[i] - list_of_percentages[i - 1]) < 5):
+        if ((list_of_percentages[i] - list_of_percentages[i - 1]) > 25) or ((list_of_percentages[i] - list_of_percentages[i - 1]) < 10):
             return False
 
     return True
